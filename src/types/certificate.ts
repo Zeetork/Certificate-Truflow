@@ -374,8 +374,10 @@ export interface WarrantyCertificateData {
   salesOrderNo: string; // SO no / Our Job Ref No
   customerPO: string;   // PO No
   poDate: string;       // PO Date (e.g. 29.09.2025 or 10.09.2026)
+  customerPODate?: string;
   certificateNumber?: string;
   date: string;         // Certificate date (e.g. 30.01.2026)
+  certificateDate?: string;
   place: string;        // e.g. "Coimbatore"
 
   // Product description & items

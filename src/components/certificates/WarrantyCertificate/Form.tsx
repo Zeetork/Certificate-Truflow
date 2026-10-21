@@ -260,7 +260,7 @@ export const WarrantyCertificateForm: React.FC<WarrantyCertificateFormProps> = (
         >
           <div className="flex items-center gap-2">
             <FileText className="w-4 h-4 text-[#FF2D01]" />
-            <span>1. Customer & Order Details (Table Header Metadata)</span>
+            <span>1. Customer & Order Details</span>
           </div>
           {openSections.orderDetails ? (
             <ChevronUp className="w-4 h-4 text-slate-500" />

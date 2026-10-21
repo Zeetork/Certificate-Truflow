@@ -474,17 +474,15 @@ export const DEFAULT_WARRANTY_CERTIFICATE_DATA: WarrantyCertificateData = {
       remarks: "Standard Supply",
     },
   ],
-  salutation: "Dear Sir,",
-  poConfirmationText:
-    "We hereby confirm that the items supplied are in accordance with your Purchase Order.",
+  salutation: "To whom so here it my concern,",
+  poConfirmationText: "",
   warrantyTermsText:
-    "The supplied valves have been manufactured to the highest standards and in full compliance with your specifications. Furthermore, we confirm that the products are warranted for a period of 18 months from the date of invoice or 12 months from the date of installation, whichever occurs earlier.",
-  warrantyPeriodSupply: "18 months from the date of invoice",
+    "The products supplied under the above-mentioned Purchase Order are manufactured to the highest standards and in accordance with the specified requirements. We confirm that the products carry a standard warranty period of 18 months from the date of supply or 12 months from the date of installation, whichever is earlier.",
+  warrantyPeriodSupply: "18 months from the date of supply",
   warrantyPeriodInstallation: "12 months from the date of installation",
   warrantyNoteText:
     "Note: The warranty is applicable only to manufacturing defects and does not cover normal wear and tear, improper usage, mishandling, or damage caused by improper installation or maintenance.",
-  closingText:
-    "We trust this meets your requirements. Should you have any further queries or require additional information, please do not hesitate to contact us.",
+  closingText: "",
   coverageDeclaration:
     "This certificate confirms warranty coverage in accordance with standard TruFlow quality management and customer warranty provisions.",
   signatoryName: "Elavarasan.K",

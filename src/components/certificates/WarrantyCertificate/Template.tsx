@@ -4,8 +4,8 @@ import React from "react";
 import {
   WarrantyCertificateData,
   WarrantyCertificateItem,
+  CustomField,
 } from "@/types/certificate";
-import { formatDisplayDate } from "@/lib/certificateDefaults";
 
 interface WarrantyCertificateTemplateProps {
   data: WarrantyCertificateData;
@@ -16,340 +16,329 @@ interface WarrantyCertificateTemplateProps {
 
 export const WarrantyCertificateTemplate: React.FC<WarrantyCertificateTemplateProps> = ({
   data,
-  certificateNumber,
-  revision = 0,
   status,
 }) => {
-  const currentStatus = (status || data.status || "DRAFT").toUpperCase();
-  const isDraft = currentStatus === "DRAFT" || !currentStatus;
-  const isApproved = currentStatus === "APPROVED";
+  const generalCustom: CustomField[] = data.customFields?.general || [];
+  const productCustom: CustomField[] = data.customFields?.product || [];
 
-  const certNo = certificateNumber || data.certificateNumber || "DRAFT";
-  const showSignatures = data.showSignatures !== false && (!isDraft || isApproved);
-  const showStamp = data.showStamp !== false;
+  // Helper to format date with dots: DD.MM.YYYY (e.g. 10.09.2026)
+  const formatDotDate = (d?: string): string => {
+    if (!d) return "";
+    const trimmed = d.trim();
+    if (trimmed.includes("T")) {
+      const datePart = trimmed.split("T")[0];
+      const parts = datePart.split("-");
+      if (parts.length === 3) return `${parts[2]}.${parts[1]}.${parts[0]}`;
+    }
+    if (trimmed.includes("-")) {
+      const parts = trimmed.split("-");
+      if (parts.length === 3 && parts[0].length === 4) {
+        return `${parts[2]}.${parts[1]}.${parts[0]}`;
+      }
+      if (parts.length === 3) {
+        return `${parts[0]}.${parts[1]}.${parts[2]}`;
+      }
+    }
+    if (trimmed.includes("/")) {
+      const parts = trimmed.split("/");
+      if (parts.length === 3 && parts[2].length === 4) {
+        return `${parts[0]}.${parts[1]}.${parts[2]}`;
+      }
+    }
+    return trimmed;
+  };
 
-  const poDateFormatted = data.poDate ? formatDisplayDate(data.poDate) : "";
-  const certDateFormatted = data.date ? formatDisplayDate(data.date) : "";
+  // Helper to format certificate date with hyphens: DD-MM-YYYY (e.g. 14-09-2026)
+  const formatHyphenDate = (d?: string): string => {
+    if (!d) return "14-09-2026";
+    const trimmed = d.trim();
+    if (trimmed.includes("T")) {
+      const datePart = trimmed.split("T")[0];
+      const parts = datePart.split("-");
+      if (parts.length === 3) return `${parts[2]}-${parts[1]}-${parts[0]}`;
+    }
+    if (trimmed.includes("-")) {
+      const parts = trimmed.split("-");
+      if (parts.length === 3 && parts[0].length === 4) {
+        return `${parts[2]}-${parts[1]}-${parts[0]}`;
+      }
+      if (parts.length === 3) {
+        return `${parts[0]}-${parts[1]}-${parts[2]}`;
+      }
+    }
+    if (trimmed.includes(".")) {
+      const parts = trimmed.split(".");
+      if (parts.length === 3) {
+        return `${parts[0]}-${parts[1]}-${parts[2]}`;
+      }
+    }
+    return trimmed;
+  };
 
-  // Line items if provided
+  const poNumber = data.customerPO || "PO00900";
+  const poDateFormatted = formatDotDate(data.poDate || data.customerPODate || "2026-09-10");
+  const certDateFormatted = formatHyphenDate(data.date || data.certificateDate || "2026-09-14");
+  const jobRefNo = data.salesOrderNo || "INS220331";
+
+  const salutation = data.salutation || "To whom so here it my concern,";
+
+  const warrantyPeriod =
+    (data.warrantyPeriodSupply && data.warrantyPeriodInstallation
+      ? `${data.warrantyPeriodSupply} or ${data.warrantyPeriodInstallation}, whichever is earlier.`
+      : null) ||
+    "18 months from the date of supply or 12 months from the date of installation, whichever is earlier.";
+
+  const warrantyNote =
+    data.warrantyNoteText
+      ? data.warrantyNoteText.replace(/^Note:\s*/i, "")
+      : "The warranty is applicable only to manufacturing defects and does not cover normal wear and tear, improper usage, mishandling, or damage caused by improper installation or maintenance.";
+
   const lineItems: WarrantyCertificateItem[] = data.lineItems || [];
   const hasMultipleLineItems = lineItems.length > 1;
 
+  let productDescriptionText = data.productDescription;
+  if (!productDescriptionText && lineItems.length > 0) {
+    const item = lineItems[0];
+    productDescriptionText = `${item.sNo || 1}. ${item.description || ""}${item.quantity ? ` ${item.quantity}` : ""}`;
+  }
+
   const signatoryName = data.signatoryName || data.witnessedBy || "Elavarasan.K";
-  const signatoryDesignation = data.signatoryDesignation || "Authorized Signatory";
   const signatoryCompany = data.signatoryCompany || "Truflow Solutions Pvt Ltd";
   const signatureUrl =
     data.witnessSignatureUrl || "/signature/truflow-signature.png";
   const stampUrl = data.sealStampUrl || "/signature/truflow-seal-stamp.png";
+
+  const currentStatus = (status || data.status || "").toUpperCase();
+  const isDraft = currentStatus === "DRAFT" || !currentStatus;
+  const isApproved = currentStatus === "APPROVED";
+  const showSignatures = data.showSignatures !== false && (!isDraft || isApproved);
+  const showStamp = data.showStamp !== false;
 
   return (
     <div
       id="certificate-a4-document"
       data-certificate-page="1"
       data-orientation="portrait"
-      className="certificate-a4-page bg-white mx-auto print:m-0 print:p-0 box-border text-black select-text shadow-sm"
+      className="certificate-a4-page bg-white mx-auto text-black select-text shadow-lg print:shadow-none print:m-0 box-border flex flex-col justify-between print:!p-[14mm]"
       style={{
         width: "794px",
         minHeight: "1123px",
-        padding: "20px 24px",
+        padding: "48px 56px 40px 56px",
         fontFamily: "Arial, 'Helvetica Neue', Helvetica, sans-serif",
+        backgroundColor: "#ffffff",
       }}
     >
-      {/* Outer border container enclosing the entire certificate from top to bottom (recovering borders below) */}
-      <div className="w-full h-full border-2 border-black flex flex-col p-0 box-border bg-white text-[11px] leading-normal min-h-[1075px] justify-between">
-        {/* ========================================================================= */}
-        {/* TOP SECTION: HEADER + METADATA TABLE + BODY CONTENT                      */}
-        {/* ========================================================================= */}
-        <div className="w-full flex flex-col">
-          {/* 1. HEADER (WARRANTY CERTIFICATE TITLE + TRUFLOW LOGO) */}
-          <div className="relative border-b-2 border-black px-6 py-4 flex items-center justify-between min-h-[64px] bg-white">
-            <h1 className="text-xl sm:text-[22px] font-black tracking-wider uppercase text-black text-center flex-1 pl-12">
-              WARRANTY CERTIFICATE
-            </h1>
-            <div className="flex items-center shrink-0">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/truflow-logo.png"
-                alt="TRUFLOW"
-                className="h-9 w-auto object-contain"
-              />
-            </div>
-          </div>
+      {/* Top and Body Content Container */}
+      <div className="w-full flex flex-col">
+        {/* Top Right Logo */}
+        <div className="flex justify-end mb-4">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/truflow-logo.png"
+            alt="TRUFLOW"
+            className="h-[46px] w-auto object-contain"
+          />
+        </div>
 
-          {/* 2. ORDER & CERTIFICATE METADATA TABLE */}
-          <table className="w-full table-fixed border-collapse border-b-2 border-black text-[11px]">
-            <colgroup>
-              <col style={{ width: "42%" }} />
-              <col style={{ width: "24%" }} />
-              <col style={{ width: "34%" }} />
-            </colgroup>
-            <tbody>
-              {/* Row 1: Customer Name | SO no | Cus PO */}
-              <tr className="border-b border-black">
-                <td className="p-2.5 border-r border-black align-middle">
-                  <span className="font-bold uppercase tracking-wide text-black">
-                    Customer Name :{" "}
-                  </span>
-                  <span className="font-semibold text-slate-900">
-                    {data.customerName || "-"}
-                  </span>
-                </td>
-                <td className="p-2.5 border-r border-black align-middle">
-                  <span className="font-bold uppercase tracking-wide text-black">
-                    SO no:{" "}
-                  </span>
-                  <span className="font-semibold font-mono text-slate-900">
-                    {data.salesOrderNo || "-"}
-                  </span>
-                </td>
-                <td className="p-2.5 align-middle">
-                  <span className="font-bold uppercase tracking-wide text-black">
-                    Cus PO:{" "}
-                  </span>
-                  <span className="font-semibold font-mono text-slate-900">
-                    {data.customerPO || "-"}
-                  </span>
-                  {poDateFormatted && (
-                    <span className="font-semibold text-slate-900 ml-1">
-                      DT-{poDateFormatted}
-                    </span>
-                  )}
-                </td>
-              </tr>
+        {/* Centered Underlined Document Title */}
+        <div className="text-center my-4">
+          <h1 className="text-[20px] font-bold text-black tracking-wider uppercase inline-block border-b-2 border-black pb-0.5">
+            WARRANTY CERTIFICATE
+          </h1>
+        </div>
 
-              {/* Row 2: CERTIFICATE NO | Date & Location */}
-              <tr>
-                <td className="p-2.5 border-r border-black align-middle">
-                  <span className="font-bold uppercase tracking-wide text-black">
-                    CERTIFICATE NO:{" "}
-                  </span>
-                  <span className="font-bold font-mono text-slate-900">
-                    {certNo}
-                    {revision > 0 ? ` (Rev ${revision})` : ""}
-                  </span>
-                </td>
-                <td colSpan={2} className="p-2.5 align-middle">
-                  <span className="font-bold uppercase tracking-wide text-black">
-                    Date :{" "}
-                  </span>
-                  <span className="font-semibold text-slate-900">
-                    {certDateFormatted || "-"} & {data.place || "Coimbatore"}
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-
-          {/* 3. MAIN INNER BOX: PRODUCT DESCRIPTION & WARRANTY TERMS */}
-          <div className="p-4 sm:p-5">
-            <div className="p-4 sm:p-5 bg-white space-y-4">
-              {/* Product Description */}
-              <div>
-                <div className="font-bold text-[12px] text-black uppercase tracking-wide mb-1.5">
-                  Product Description:
-                </div>
-                {hasMultipleLineItems ? (
-                  <table className="w-full border-collapse border border-black text-[10.5px] mt-2 mb-1">
-                    <thead>
-                      <tr className="bg-slate-100 border-b border-black text-black font-bold">
-                        <th className="p-1.5 border-r border-black text-center w-12">
-                          S.No
-                        </th>
-                        <th className="p-1.5 border-r border-black text-left">
-                          Description
-                        </th>
-                        <th className="p-1.5 border-r border-black text-center w-20">
-                          Size
-                        </th>
-                        <th className="p-1.5 border-r border-black text-center w-20">
-                          Qty
-                        </th>
-                        <th className="p-1.5 text-left w-28">Remarks</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {lineItems.map((item, idx) => (
-                        <tr
-                          key={item.id || idx}
-                          className="border-b border-slate-300 last:border-b-0"
-                        >
-                          <td className="p-1.5 border-r border-black text-center font-mono">
-                            {item.sNo || idx + 1}
-                          </td>
-                          <td className="p-1.5 border-r border-black font-medium">
-                            {item.description}
-                          </td>
-                          <td className="p-1.5 border-r border-black text-center font-mono">
-                            {item.size || "-"}
-                          </td>
-                          <td className="p-1.5 border-r border-black text-center font-mono font-bold">
-                            {item.quantity || "1 No's"}
-                          </td>
-                          <td className="p-1.5 text-slate-600">
-                            {item.remarks || "-"}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                ) : (
-                  <div className="text-[11.5px] font-medium text-slate-900 pl-2 py-0.5">
-                    {data.productDescription ||
-                      (lineItems[0]?.description
-                        ? `${lineItems[0].sNo || 1}. ${lineItems[0].description} - ${lineItems[0].quantity || "1 No's"}`
-                        : "1. Gate Valve - 6\" 1no's")}
-                  </div>
-                )}
-              </div>
-
-              {/* Salutation */}
-              <div className="text-[11.5px] font-semibold text-black pt-1">
-                {data.salutation || "To whom so here it may concern,"}
-              </div>
-
-              {/* Paragraph 1: Confirmation of PO */}
-              <p className="text-[11px] leading-relaxed text-black text-justify indent-6">
-                {data.poConfirmationText ? (
-                  data.poConfirmationText
-                ) : (
-                  <>
-                    We hereby confirm that the supplied items are in accordance
-                    with Purchase Order No.{" "}
-                    <span className="font-bold">
-                      {data.customerPO || "PO00900"}
-                    </span>
-                    {poDateFormatted && (
-                      <>
-                        , dated{" "}
-                        <span className="font-bold">{poDateFormatted}</span>
-                      </>
-                    )}
-                    .
-                  </>
-                )}
-              </p>
-
-              {/* Paragraph 2: Manufacturing & Warranty Period Terms */}
-              <p className="text-[11px] leading-relaxed text-black text-justify indent-6">
-                {data.warrantyTermsText || (
-                  <>
-                    The products supplied under the above-mentioned Purchase
-                    Order are manufactured to the highest standards and in
-                    accordance with the specified requirements. We confirm that
-                    the products carry a standard warranty period of{" "}
-                    <span className="font-bold">
-                      {data.warrantyPeriodSupply ||
-                        "18 months from the date of invoice"}
-                    </span>{" "}
-                    or{" "}
-                    <span className="font-bold">
-                      {data.warrantyPeriodInstallation ||
-                        "12 months from the date of installation"}
-                    </span>
-                    , whichever is earlier.
-                  </>
-                )}
-              </p>
-
-              {/* Warranty Exclusions / Notes */}
-              <div className="text-[10.5px] leading-relaxed text-black text-justify pt-1 indent-6">
-                <span className="font-bold">Note: </span>
-                {data.warrantyNoteText
-                  ? data.warrantyNoteText.replace(/^Note:\s*/i, "")
-                  : "The warranty is applicable only to manufacturing defects and does not cover normal wear and tear, improper usage, mishandling, or damage caused by improper installation or maintenance."}
-              </div>
-
-              {/* Closing sentence */}
-              {data.closingText && (
-                <p className="text-[10.5px] leading-relaxed text-slate-800 text-justify pt-0.5">
-                  {data.closingText}
-                </p>
-              )}
-            </div>
+        {/* Right-aligned Date */}
+        <div className="flex justify-end mb-6">
+          <div className="text-[13.5px] text-black">
+            <span className="font-bold">Date: </span>
+            <span className="font-semibold">{certDateFormatted}</span>
           </div>
         </div>
 
-        {/* ========================================================================= */}
-        {/* BOTTOM SECTION: CONFIRMATION + SIGNATORY + RECOVERED ENCLOSED FOOTER      */}
-        {/* ========================================================================= */}
-        <div className="w-full flex flex-col mt-auto">
-          {/* 4. QUALITY CONFIRMATION DECLARATION BANNER */}
-          <div className="w-full border-t border-b border-black py-2.5 px-6 text-center bg-white">
-            <p className="font-bold text-[11px] text-black tracking-wide leading-snug">
-              {data.coverageDeclaration ||
-                "This certificate confirms warranty coverage in accordance with standard TruFlow quality management and customer warranty provisions."}
-            </p>
+        {/* Letter Recipient / Order Reference Metadata */}
+        <div className="space-y-1.5 text-[13.5px] text-black mb-8 leading-relaxed font-sans">
+          <div className="flex items-baseline">
+            <span className="font-bold min-w-[130px]">Customer</span>
+            <span className="font-bold mr-2">:</span>
+            <span className="font-bold text-black">
+              {data.customerName || "Armatury Bauen Olomouc Controls Private Limited"}
+            </span>
+          </div>
+          <div className="flex items-baseline">
+            <span className="font-bold mr-1">Cus Po No:</span>
+            <span>
+              {poNumber}
+              {poDateFormatted ? ` Dt:${poDateFormatted}` : ""}
+            </span>
+          </div>
+          <div className="flex items-baseline">
+            <span className="font-bold mr-1">SO No :</span>
+            <span>{jobRefNo}</span>
+          </div>
+          <div className="flex items-baseline">
+            <span className="font-bold mr-1">Product Description:</span>
+            {productDescriptionText ? (
+              <span className="font-medium text-black ml-1">
+                {productDescriptionText}
+              </span>
+            ) : null}
           </div>
 
-          {/* 5. SIGNATORY SECTION */}
-          <div className="w-full px-8 py-5 flex flex-col justify-between min-h-[140px] bg-white">
-            <div className="text-[11.5px] font-semibold text-black">
-              Yours sincerely,
+          {/* Multiple items listed cleanly if present */}
+          {hasMultipleLineItems && (
+            <div className="mt-1 pl-4 text-[12px] space-y-0.5 text-slate-800">
+              {lineItems.map((item, idx) => (
+                <div key={item.id || idx}>
+                  {item.sNo || idx + 1}. {item.description}{" "}
+                  {item.size ? `- ${item.size} ` : ""}
+                  {item.quantity ? `(${item.quantity})` : ""}
+                  {item.remarks ? ` - ${item.remarks}` : ""}
+                </div>
+              ))}
             </div>
+          )}
+        </div>
 
-            {/* Stamp & Signature area */}
-            <div className="relative mt-2 min-h-[70px] flex items-end">
-              {/* Stamp and signature visuals */}
-              {showSignatures && (
-                <div className="absolute left-0 bottom-2 flex items-center gap-3 pointer-events-none">
-                  {/* Seal Stamp */}
-                  {showStamp && stampUrl && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={stampUrl}
-                      alt="Truflow Seal Stamp"
-                      className="h-16 w-16 object-contain opacity-95"
-                    />
-                  )}
+        {/* Salutation */}
+        <div className="font-bold text-[13.5px] text-black mb-4">
+          {salutation}
+        </div>
 
-                  {/* Digital Signature */}
-                  {signatureUrl && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={signatureUrl}
-                      alt="Signatory Signature"
-                      className="h-12 w-auto object-contain -ml-4 mix-blend-multiply"
-                    />
-                  )}
-                </div>
-              )}
+        {/* Paragraph 1 - Confirmation of PO */}
+        <p
+          className="text-[13px] text-black leading-relaxed text-justify mb-5"
+          style={{ textIndent: "2.5rem", textAlign: "justify" }}
+        >
+          {data.poConfirmationText ? (
+            data.poConfirmationText
+          ) : (
+            <>
+              We hereby confirm that the supplied items are in accordance with Purchase Order No.{" "}
+              <span className="text-black">{poNumber}</span>
+              {poDateFormatted ? (
+                <>, dated <span className="text-black">{poDateFormatted}</span></>
+              ) : null}
+              .
+            </>
+          )}
+        </p>
 
-              {/* Dotted underline and name block */}
-              <div className="space-y-1">
-                <div className="text-slate-400 font-mono tracking-widest text-xs select-none">
-                  ...............................................
-                </div>
-                <div className="font-bold text-[12px] uppercase tracking-wider text-black">
-                  {signatoryName}
-                </div>
-                <div className="text-[10px] font-medium text-slate-700">
-                  {signatoryCompany}
-                </div>
+        {/* Paragraph 2 - Manufacturing Standards & Warranty Period */}
+        <p
+          className="text-[13px] text-black leading-relaxed text-justify mb-5"
+          style={{ textIndent: "2.5rem", textAlign: "justify" }}
+        >
+          {data.warrantyTermsText ? (
+            data.warrantyTermsText
+          ) : (
+            <>
+              The products supplied under the above-mentioned Purchase Order are manufactured to the{" "}
+              highest standards and in accordance with the specified requirements. We confirm that the products{" "}
+              carry a standard warranty period of {warrantyPeriod}
+            </>
+          )}
+        </p>
+
+        {/* Paragraph 3 - Note & Exclusions */}
+        <p
+          className="text-[13px] text-black leading-relaxed text-justify mb-6"
+          style={{ textIndent: "2.5rem", textAlign: "justify" }}
+        >
+          <span className="font-bold text-black">Note:</span> {warrantyNote}
+        </p>
+
+        {/* Optional Closing Sentence */}
+        {data.closingText && (
+          <p
+            className="text-[12.5px] text-black leading-relaxed text-justify mb-4"
+            style={{ textIndent: "2.5rem", textAlign: "justify" }}
+          >
+            {data.closingText}
+          </p>
+        )}
+
+        {/* Optional Custom Fields */}
+        {(generalCustom.length > 0 || productCustom.length > 0) && (
+          <div className="my-3 space-y-1 text-[12px] text-black pl-10">
+            {[...generalCustom, ...productCustom].map((cf, idx) => (
+              <div key={cf.id || idx}>
+                <span className="font-bold">{cf.name}: </span>
+                <span>{cf.value}</span>
               </div>
-            </div>
+            ))}
+          </div>
+        )}
+
+        {/* Signatory Section */}
+        <div className="mt-6 mb-4">
+          <div className="font-bold text-[13px] text-black mb-2">
+            Yours sincerely,
           </div>
 
-          {/* 6. RECOVERED COMPANY FOOTER (Fully enclosed inside the bottom border) */}
-          <div className="w-full border-t-2 border-black px-6 py-3 text-center bg-white">
-            <div className="font-bold uppercase text-[11px] tracking-wider text-black">
-              {data.companyName || "TRUFLOW SOLUTIONS PRIVATE LIMITED"}
-            </div>
-            <div className="text-[9.5px] text-black mt-0.5 leading-tight">
-              {data.companyAddress ||
-                "S.F. No-617/2H2, Vadakku Thottam, L&T Road, Malumichampatti, Coimbatore-641 021, Tamil Nadu, India."}
-            </div>
-            <div className="text-[9px] text-black mt-1 font-medium leading-tight">
-              <span>{data.companyWebsite || "www.truflow.com"}</span>
-              <span className="mx-2">|</span>
-              <span>
-                Email: {data.companyEmail || "sales@truflow.com"}
-              </span>
-              <span className="mx-2">|</span>
-              <span>
-                GST No: {data.gstNo || "33AAJCR6720N1Z1"}
-              </span>
-            </div>
+          <div className="my-2 h-[75px] flex items-center">
+            {showSignatures ? (
+              <div className="relative flex items-center h-[75px]">
+                {showStamp && stampUrl && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={stampUrl}
+                    alt="Truflow Seal Stamp"
+                    className="h-[75px] w-[75px] object-contain opacity-95"
+                  />
+                )}
+                {signatureUrl && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={signatureUrl}
+                    alt="Authorized Signature"
+                    className={`h-[55px] w-auto object-contain mix-blend-multiply ${
+                      showStamp && stampUrl ? "-ml-6" : ""
+                    }`}
+                  />
+                )}
+              </div>
+            ) : (
+              <div className="w-48 border-b border-dashed border-gray-400 h-10" />
+            )}
           </div>
+
+          <div className="font-bold text-[13px] uppercase tracking-wide text-black mt-2">
+            {signatoryName}
+          </div>
+          {signatoryCompany && (
+            <div className="text-[11.5px] text-black mt-0.5">
+              {signatoryCompany}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Centered Clean Footer (No Box/Table Borders) */}
+      <div className="w-full text-center mt-auto pt-8">
+        <div className="font-bold text-[12.5px] text-black tracking-wide">
+          {data.companyName || "TruFlow Solutions Private Limited,"}
+        </div>
+        <div className="text-[11px] text-black mt-1 leading-snug">
+          {data.companyAddress ||
+            "S.F. No-617/2H2, Vadakku Thottam, L&T Road, Malumichampatti, Coimbatore-641 021, Tamil Nadu, India."}
+        </div>
+        <div className="text-[11px] text-black mt-1 leading-snug">
+          <a
+            href={`https://${data.companyWebsite || "www.truflow.com"}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 underline"
+          >
+            {data.companyWebsite || "www.truflow.com"}
+          </a>
+          {" "}| Email:{" "}
+          <a
+            href={`mailto:${data.companyEmail || "sales@truflow.com"}`}
+            className="text-blue-600 underline"
+          >
+            {data.companyEmail || "sales@truflow.com"}
+          </a>
+          {" "}| GST No: {data.gstNo || "33AAJCR6720N1Z1"}
         </div>
       </div>
     </div>
