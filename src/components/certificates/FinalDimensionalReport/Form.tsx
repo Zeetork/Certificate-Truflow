@@ -333,23 +333,56 @@ export const FinalDimensionalReportForm: React.FC<
 
         {openSections.general && (
           <div className="p-5 space-y-4">
-            {/* Header Metadata Grid */}
+            {/* Customer & Order Metadata Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1">
-                  Certificate No
+                  Customer Name
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. TF-22019901"
-                  value={data.certificateNumber || ""}
+                  placeholder="Customer / Client Name"
+                  value={data.customerName || ""}
                   onChange={(e) =>
-                    handleCommonChange("certificateNumber", e.target.value)
+                    handleCommonChange("customerName", e.target.value)
                   }
-                  className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF2D01]/20 font-mono transition"
+                  className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF2D01]/20 transition"
                 />
               </div>
 
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1">
+                  Sales Order No
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. 510"
+                  value={data.salesOrderNo || ""}
+                  onChange={(e) =>
+                    handleCommonChange("salesOrderNo", e.target.value)
+                  }
+                  className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl font-mono focus:outline-none focus:ring-2 focus:ring-[#FF2D01]/20 transition"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1">
+                  Customer PO No
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. PO-89021"
+                  value={data.customerPO || ""}
+                  onChange={(e) =>
+                    handleCommonChange("customerPO", e.target.value)
+                  }
+                  className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl font-mono focus:outline-none focus:ring-2 focus:ring-[#FF2D01]/20 transition"
+                />
+              </div>
+            </div>
+
+            {/* Inspection Date, Approved GAD No & Equipment */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1">
                   Inspection Date
@@ -378,8 +411,24 @@ export const FinalDimensionalReportForm: React.FC<
                   className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF2D01]/20 font-mono transition"
                 />
               </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1">
+                  Product / Equipment Description
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Y - STRAINER"
+                  value={data.itemDescription || ""}
+                  onChange={(e) =>
+                    handleCommonChange("itemDescription", e.target.value)
+                  }
+                  className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl font-bold focus:outline-none focus:ring-2 focus:ring-[#FF2D01]/20 uppercase transition"
+                />
+              </div>
             </div>
 
+            {/* Size, Quantity & Dimension Unit Notice */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1">
@@ -422,68 +471,6 @@ export const FinalDimensionalReportForm: React.FC<
                   }
                   className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF2D01]/20 transition"
                 />
-              </div>
-            </div>
-
-            {/* Sub-header Product/Equipment Banner & Order Details */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-slate-100">
-              <div className="md:col-span-1">
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1">
-                  Product / Equipment Description
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Y - STRAINER"
-                  value={data.itemDescription || ""}
-                  onChange={(e) =>
-                    handleCommonChange("itemDescription", e.target.value)
-                  }
-                  className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl font-bold focus:outline-none focus:ring-2 focus:ring-[#FF2D01]/20 uppercase transition"
-                />
-                <span className="text-[10px] text-slate-400 mt-1 block">
-                  Displayed as the centered banner above the table.
-                </span>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1">
-                  Customer Name
-                </label>
-                <input
-                  type="text"
-                  placeholder="Customer / Client Name"
-                  value={data.customerName || ""}
-                  onChange={(e) =>
-                    handleCommonChange("customerName", e.target.value)
-                  }
-                  className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF2D01]/20 transition"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1">
-                  Sales Order / PO No
-                </label>
-                <div className="grid grid-cols-2 gap-2">
-                  <input
-                    type="text"
-                    placeholder="Sales Order"
-                    value={data.salesOrderNo || ""}
-                    onChange={(e) =>
-                      handleCommonChange("salesOrderNo", e.target.value)
-                    }
-                    className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl font-mono focus:outline-none focus:ring-2 focus:ring-[#FF2D01]/20 transition"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Customer PO"
-                    value={data.customerPO || ""}
-                    onChange={(e) =>
-                      handleCommonChange("customerPO", e.target.value)
-                    }
-                    className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl font-mono focus:outline-none focus:ring-2 focus:ring-[#FF2D01]/20 transition"
-                  />
-                </div>
               </div>
             </div>
           </div>

@@ -88,9 +88,37 @@ export const FinalDimensionalReportTemplate: React.FC<
         {/* 2. ALIGNED METADATA SECTION NEXT TO HEADER                                */}
         {/* ========================================================================= */}
         <div className="w-full border-b-[1.5px] border-black text-[10px]">
-          {/* Row 1: Certificate No (Left) | Date (Center) | Approved GAD No (Right) */}
+          {/* Row 1: Customer Name (Left) | Sales Order No (Center) | Customer PO No (Right) */}
           <div className="grid grid-cols-12 border-b border-black">
-            <div className="col-span-5 px-3 py-1.5 border-r border-black flex items-center gap-2">
+            <div className="col-span-4 px-3 py-1.5 border-r border-black flex items-center gap-2">
+              <span className="font-bold text-black uppercase tracking-wider whitespace-nowrap text-[9.5px]">
+                Customer Name :
+              </span>
+              <span className="font-semibold text-slate-900 text-[10px] truncate">
+                {data.customerName || "-"}
+              </span>
+            </div>
+            <div className="col-span-4 px-3 py-1.5 border-r border-black flex items-center gap-2">
+              <span className="font-bold text-black uppercase tracking-wider whitespace-nowrap text-[9.5px]">
+                Sales Order No :
+              </span>
+              <span className="font-semibold text-slate-900 font-mono text-[10px]">
+                {data.salesOrderNo || "-"}
+              </span>
+            </div>
+            <div className="col-span-4 px-3 py-1.5 flex items-center gap-2">
+              <span className="font-bold text-black uppercase tracking-wider whitespace-nowrap text-[9.5px]">
+                Customer PO No :
+              </span>
+              <span className="font-semibold text-slate-900 font-mono text-[10px]">
+                {data.customerPO || "-"}
+              </span>
+            </div>
+          </div>
+
+          {/* Row 2: Certificate No (Left) | Date (Center) | Approved GAD No (Right) */}
+          <div className="grid grid-cols-12 border-b border-black">
+            <div className="col-span-4 px-3 py-1.5 border-r border-black flex items-center gap-2">
               <span className="font-bold text-black uppercase tracking-wider whitespace-nowrap text-[9.5px]">
                 Certificate No :
               </span>
@@ -98,7 +126,7 @@ export const FinalDimensionalReportTemplate: React.FC<
                 {certNo}
               </span>
             </div>
-            <div className="col-span-3 px-3 py-1.5 border-r border-black flex items-center gap-2">
+            <div className="col-span-4 px-3 py-1.5 border-r border-black flex items-center gap-2">
               <span className="font-bold text-black uppercase tracking-wider whitespace-nowrap text-[9.5px]">
                 Date :
               </span>
@@ -118,7 +146,7 @@ export const FinalDimensionalReportTemplate: React.FC<
 
           {/* Row 2: Size (Left) | Quantity (Center) | Units notice (Right) */}
           <div className="grid grid-cols-12 border-b border-black">
-            <div className="col-span-5 px-3 py-1.5 border-r border-black flex items-center gap-2">
+            <div className="col-span-4 px-3 py-1.5 border-r border-black flex items-center gap-2">
               <span className="font-bold text-black uppercase tracking-wider whitespace-nowrap text-[9.5px]">
                 Size :
               </span>
@@ -126,7 +154,7 @@ export const FinalDimensionalReportTemplate: React.FC<
                 {data.size || "-"}
               </span>
             </div>
-            <div className="col-span-3 px-3 py-1.5 border-r border-black flex items-center gap-2">
+            <div className="col-span-4 px-3 py-1.5 border-r border-black flex items-center gap-2">
               <span className="font-bold text-black uppercase tracking-wider whitespace-nowrap text-[9.5px]">
                 Quantity :
               </span>
