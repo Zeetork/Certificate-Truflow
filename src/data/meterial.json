@@ -1,0 +1,152 @@
+[
+    {
+        "name": "WCB",
+        "Chemical Composition (%)": {
+            "Carbon (C)": "0.30%",
+            "Manganese (Mn)": "1.00%",
+            "Silicon (Si)": "0.60%",
+            "Phosphorus (P)": "0.04%",
+            "Sulfur (S)": "0.04%",
+            "Chromium (Cr)": "0.50%",
+            "Nickel (Ni)": "0.50%",
+            "Molybdenum (Mo)": "0.20%",
+            "Copper (Cu)": "0.30%",
+            "Vanadium (V)": "0.03%",
+            "Iron (Fe)": "Balance"
+        },
+        "Mechanical Properties": {
+            "Tensile Strength (MPa)": "485 - 655",
+            "Yield Strength (MPa)": "250 min",
+            "Elongation (%)": "22 min",
+            "Reduction of Area (%)": "35 min",
+            "Hardness (HB)": null,
+            "Impact Temperature (°C)": null,
+            "Charpy Impact Energy - AKV (J)": null
+        }
+    },
+    {
+        "name": "CF8M",
+        "Chemical Composition (%)": {
+            "Carbon (C)": "0.08%",
+            "Manganese (Mn)": "1.50%",
+            "Silicon (Si)": "1.50%",
+            "Phosphorus (P)": "0.04%",
+            "Sulfur (S)": "0.04%",
+            "Chromium (Cr)": "18.00% - 21.00%",
+            "Nickel (Ni)": "9.00% - 12.00%",
+            "Molybdenum (Mo)": "2.00% - 3.00%",
+            "Copper (Cu)": "N/A",
+            "Vanadium (V)": "N/A",
+            "Iron (Fe)": "Balance"
+        },
+        "Mechanical Properties": {
+            "Tensile Strength (MPa)": "485 min",
+            "Yield Strength (MPa)": "205 min",
+            "Elongation (%)": "30 min",
+            "Reduction of Area (%)": null,
+            "Hardness (HB)": null,
+            "Impact Temperature (°C)": null,
+            "Charpy Impact Energy - AKV (J)": null
+        }
+    },
+    {
+        "name": "CH8M",
+        "Chemical Composition (%)": {
+            "Carbon (C)": "0.08%",
+            "Manganese (Mn)": "1.50%",
+            "Silicon (Si)": "1.00%",
+            "Phosphorus (P)": "0.04%",
+            "Sulfur (S)": "0.04%",
+            "Chromium (Cr)": "18.00% - 21.00%",
+            "Nickel (Ni)": "11.00% - 14.00%",
+            "Molybdenum (Mo)": "3.00% - 4.00%",
+            "Copper (Cu)": "N/A",
+            "Vanadium (V)": "N/A",
+            "Iron (Fe)": "Balance"
+        },
+        "Mechanical Properties": {
+            "Tensile Strength (MPa)": null,
+            "Yield Strength (MPa)": null,
+            "Elongation (%)": null,
+            "Reduction of Area (%)": null,
+            "Hardness (HB)": null,
+            "Impact Temperature (°C)": null,
+            "Charpy Impact Energy - AKV (J)": null
+        }
+    },
+    {
+        "name": "CF8",
+        "Chemical Composition (%)": {
+            "Carbon (C)": "0.08%",
+            "Manganese (Mn)": "1.50%",
+            "Silicon (Si)": "2.00%",
+            "Phosphorus (P)": "0.04%",
+            "Sulfur (S)": "0.04%",
+            "Chromium (Cr)": "17.00% - 21.00%",
+            "Nickel (Ni)": "8.00% - 12.00%",
+            "Molybdenum (Mo)": "0.50%",
+            "Copper (Cu)": "N/A",
+            "Vanadium (V)": "N/A",
+            "Iron (Fe)": "Balance"
+        },
+        "Mechanical Properties": {
+            "Tensile Strength (MPa)": "485 min",
+            "Yield Strength (MPa)": "205 min",
+            "Elongation (%)": "35 min",
+            "Reduction of Area (%)": null,
+            "Hardness (HB)": null,
+            "Impact Temperature (°C)": null,
+            "Charpy Impact Energy - AKV (J)": null
+        }
+    },
+    {
+        "name": "CF3",
+        "Chemical Composition (%)": {
+            "Carbon (C)": "0.03%",
+            "Manganese (Mn)": "1.50%",
+            "Silicon (Si)": "2.00%",
+            "Phosphorus (P)": "0.04%",
+            "Sulfur (S)": "0.04%",
+            "Chromium (Cr)": "17.00% - 21.00%",
+            "Nickel (Ni)": "8.00% - 12.00%",
+            "Molybdenum (Mo)": "0.50%",
+            "Copper (Cu)": "N/A",
+            "Vanadium (V)": "N/A",
+            "Iron (Fe)": "Balance"
+        },
+        "Mechanical Properties": {
+            "Tensile Strength (MPa)": "485 min",
+            "Yield Strength (MPa)": "205 min",
+            "Elongation (%)": "35 min",
+            "Reduction of Area (%)": null,
+            "Hardness (HB)": null,
+            "Impact Temperature (°C)": null,
+            "Charpy Impact Energy - AKV (J)": null
+        }
+    },
+    {
+        "name": "CF3M",
+        "Chemical Composition (%)": {
+            "Carbon (C)": "0.03%",
+            "Manganese (Mn)": "1.50%",
+            "Silicon (Si)": "1.50%",
+            "Phosphorus (P)": "0.04%",
+            "Sulfur (S)": "0.04%",
+            "Chromium (Cr)": "17.00% - 21.00%",
+            "Nickel (Ni)": "9.00% - 13.00%",
+            "Molybdenum (Mo)": "2.00% - 3.00%",
+            "Copper (Cu)": "N/A",
+            "Vanadium (V)": "N/A",
+            "Iron (Fe)": "Balance"
+        },
+        "Mechanical Properties": {
+            "Tensile Strength (MPa)": "485 min",
+            "Yield Strength (MPa)": "205 min",
+            "Elongation (%)": "30 min",
+            "Reduction of Area (%)": null,
+            "Hardness (HB)": null,
+            "Impact Temperature (°C)": null,
+            "Charpy Impact Energy - AKV (J)": null
+        }
+    }
+]

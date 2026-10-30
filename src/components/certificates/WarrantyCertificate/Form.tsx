@@ -172,13 +172,13 @@ export const WarrantyCertificateForm: React.FC<WarrantyCertificateFormProps> = (
   const handleResetStandardTerms = () => {
     onChange({
       ...data,
-      salutation: "Dear Sir,",
+      declarationText: DEFAULT_WARRANTY_CERTIFICATE_DATA.declarationText,
       warrantyTermsText: DEFAULT_WARRANTY_CERTIFICATE_DATA.warrantyTermsText,
-      warrantyPeriodSupply: "18 months from the date of invoice",
+      warrantyPeriodSupply: "18 months from the date of supply",
       warrantyPeriodInstallation: "12 months from the date of installation",
       warrantyNoteText: DEFAULT_WARRANTY_CERTIFICATE_DATA.warrantyNoteText,
-      closingText: DEFAULT_WARRANTY_CERTIFICATE_DATA.closingText,
-      coverageDeclaration: DEFAULT_WARRANTY_CERTIFICATE_DATA.coverageDeclaration,
+      closingText: "",
+      coverageDeclaration: "",
     });
   };
 
@@ -272,18 +272,18 @@ export const WarrantyCertificateForm: React.FC<WarrantyCertificateFormProps> = (
         {openSections.orderDetails && (
           <div className="p-5 space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {/* Customer Name */}
+              {/* Customer */}
               <div className="sm:col-span-2">
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Customer Name <span className="text-red-500">*</span>
+                  Customer <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
-                  value={data.customerName || ""}
+                  value={data.customerName ?? ""}
                   onChange={(e) =>
                     handleFieldChange("customerName", e.target.value)
                   }
-                  placeholder="e.g. IL & FS TAMILNADU POWER COMPANY LIMITED"
+                  placeholder="e.g. ABC Private Limited"
                   className={`w-full text-xs sm:text-sm border rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-[#FF2D01] ${
                     errors.customerName
                       ? "border-red-500 bg-red-50"
@@ -297,35 +297,51 @@ export const WarrantyCertificateForm: React.FC<WarrantyCertificateFormProps> = (
                 )}
               </div>
 
-              {/* Sales Order / Job Ref No */}
+              {/* Our Sales Order No. */}
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  SO No / Our Job Ref No <span className="text-red-500">*</span>
+                  Our Sales Order No. <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
-                  value={data.salesOrderNo || ""}
+                  value={data.salesOrderNo ?? ""}
                   onChange={(e) =>
                     handleFieldChange("salesOrderNo", e.target.value)
                   }
-                  placeholder="e.g. INS220331"
+                  placeholder="e.g. 510"
                   className="w-full text-xs sm:text-sm border border-slate-300 rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-[#FF2D01] bg-white font-mono"
                 />
               </div>
 
-              {/* Customer PO Number */}
+              {/* Customer PO No. */}
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Customer PO Number <span className="text-red-500">*</span>
+                  Customer PO No. <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
-                  value={data.customerPO || ""}
+                  value={data.customerPO ?? ""}
                   onChange={(e) =>
                     handleFieldChange("customerPO", e.target.value)
                   }
-                  placeholder="e.g. 4100007629"
+                  placeholder="e.g. P000900"
                   className="w-full text-xs sm:text-sm border border-slate-300 rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-[#FF2D01] bg-white font-mono"
+                />
+              </div>
+
+              {/* Product Description */}
+              <div className="sm:col-span-2">
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Product Description
+                </label>
+                <input
+                  type="text"
+                  value={data.productDescription ?? ""}
+                  onChange={(e) =>
+                    handleFieldChange("productDescription", e.target.value)
+                  }
+                  placeholder="e.g. Please refer above Sales Order"
+                  className="w-full text-xs sm:text-sm border border-slate-300 rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-[#FF2D01] bg-white"
                 />
               </div>
 
@@ -336,7 +352,7 @@ export const WarrantyCertificateForm: React.FC<WarrantyCertificateFormProps> = (
                 </label>
                 <input
                   type="date"
-                  value={data.poDate || ""}
+                  value={data.poDate ?? ""}
                   onChange={(e) => handleFieldChange("poDate", e.target.value)}
                   className="w-full text-xs sm:text-sm border border-slate-300 rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-[#FF2D01] bg-white"
                 />
@@ -349,8 +365,15 @@ export const WarrantyCertificateForm: React.FC<WarrantyCertificateFormProps> = (
                 </label>
                 <input
                   type="date"
-                  value={data.date || ""}
-                  onChange={(e) => handleFieldChange("date", e.target.value)}
+                  value={data.date ?? data.certificateDate ?? ""}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    onChange({
+                      ...data,
+                      date: val,
+                      certificateDate: val,
+                    });
+                  }}
                   className="w-full text-xs sm:text-sm border border-slate-300 rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-[#FF2D01] bg-white"
                 />
               </div>
@@ -362,7 +385,7 @@ export const WarrantyCertificateForm: React.FC<WarrantyCertificateFormProps> = (
                 </label>
                 <input
                   type="text"
-                  value={data.place || ""}
+                  value={data.place ?? ""}
                   onChange={(e) => handleFieldChange("place", e.target.value)}
                   placeholder="e.g. Coimbatore"
                   className="w-full text-xs sm:text-sm border border-slate-300 rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-[#FF2D01] bg-white"

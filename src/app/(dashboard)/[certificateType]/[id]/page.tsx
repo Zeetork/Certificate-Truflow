@@ -9,6 +9,7 @@ import { CertificateRenderer } from "@/components/certificates/CertificateRender
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { generateCertificatePdf, printCertificate } from "@/lib/pdfGenerator";
 import { ICertificate, AuditEntry } from "@/types/certificate";
+import { calculateValveFunctionalTestPages } from "@/lib/certificatePagination";
 import { SessionUser } from "@/types/auth";
 import {
   ArrowLeft,
@@ -530,8 +531,13 @@ export default function CertificateViewPage({ params }: PageProps) {
               effectiveType === "material-test" ||
               effectiveType === "hydro-test" ||
               effectiveType === "final-dimensional-report" ||
-              effectiveType === "warranty-certificate";
-            const totalPages = isSinglePage ? 1 : Math.max(1, lineItems.length);
+              effectiveType === "warranty-certificate" ||
+              effectiveType === "painting-report";
+            const totalPages = isSinglePage
+              ? 1
+              : effectiveType === "valve-functional-test"
+              ? (certificate.pageCount || calculateValveFunctionalTestPages(certData))
+              : Math.max(1, lineItems.length);
             const isMultiPage = !isSinglePage && totalPages > 1;
 
             return (
@@ -653,8 +659,13 @@ export default function CertificateViewPage({ params }: PageProps) {
               effectiveType === "material-test" ||
               effectiveType === "hydro-test" ||
               effectiveType === "final-dimensional-report" ||
-              effectiveType === "warranty-certificate";
-            const totalPages = isSinglePage ? 1 : Math.max(1, lineItems.length);
+              effectiveType === "warranty-certificate" ||
+              effectiveType === "painting-report";
+            const totalPages = isSinglePage
+              ? 1
+              : effectiveType === "valve-functional-test"
+              ? (certificate.pageCount || calculateValveFunctionalTestPages(certData))
+              : Math.max(1, lineItems.length);
             const renderedPagesCount = viewMode === "all" ? totalPages : 1;
             const totalHeight = (baseHeight + 24) * renderedPagesCount;
 
@@ -750,6 +761,27 @@ export default function CertificateViewPage({ params }: PageProps) {
                       {certificate.lastCertificateNumber && certificate.lastCertificateNumber !== certificate.certificateNumber
                         ? `${certificate.certificateNumber} - ${certificate.lastCertificateNumber}`
                         : `${((certificate.certificateData as unknown as { lineItems?: unknown[] })?.lineItems?.length || 1)} Pages`}
+                    </span>
+                  </div>
+                </>
+              ) : effectiveType === "painting-report" ? (
+                <>
+                  <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100/80">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Colour / Shade</span>
+                    <span className="font-semibold text-slate-800 font-mono truncate block mt-0.5">
+                      {(certificate.certificateData as unknown as Record<string, string>)?.colourShade || "RAL3020 / Red"}
+                    </span>
+                  </div>
+                  <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100/80">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Valve Size</span>
+                    <span className="font-semibold text-slate-800 font-mono truncate block mt-0.5">
+                      {(certificate.certificateData as unknown as Record<string, string>)?.valveSize || "-"}
+                    </span>
+                  </div>
+                  <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100/80">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Quantity</span>
+                    <span className="font-semibold text-slate-800 font-mono truncate block mt-0.5">
+                      {(certificate.certificateData as unknown as Record<string, string>)?.qty || "1"}
                     </span>
                   </div>
                 </>

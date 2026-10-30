@@ -18,7 +18,7 @@ interface CertificateHeaderProps {
 export const CertificateHeader: React.FC<CertificateHeaderProps> = ({
   title = "Certificate of Conformity",
   subtitle,
-  certificateNumber = "ZIN2600001",
+  certificateNumber = "TFC2600001",
   customerName = "-",
   salesOrderNo = "-",
   salesOrderDate,
@@ -113,7 +113,7 @@ export const CertificateHeader: React.FC<CertificateHeaderProps> = ({
                 <div className="flex items-center">
                   <span className="whitespace-nowrap uppercase">CERTIFICATE NO:</span>
                   <span className="font-medium ml-2 font-mono">
-                    {certificateNumber || "ZIN2600001"}
+                    {certificateNumber || "TFC2600001"}
                   </span>
                 </div>
               </td>

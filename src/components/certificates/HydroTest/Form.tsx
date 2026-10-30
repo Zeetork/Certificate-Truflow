@@ -10,6 +10,7 @@ import {
   CheckCircle2,
   Activity,
   UserCheck,
+  ShieldCheck,
   Eye,
   ChevronDown,
   ChevronUp,
@@ -23,6 +24,44 @@ interface SignatoryUser {
   signature?: string;
   roleName?: string;
 }
+
+const DEFAULT_SIGNATORIES: SignatoryUser[] = [
+  {
+    _id: "sig-sivaganeshan",
+    name: "SIVAGANESHAN.V.A",
+    email: "sivaganeshan@truflow.com",
+    signature: "/signature/signature-sivaganeshan.png",
+    roleName: "Quality Engineer",
+  },
+  {
+    _id: "sig-karthikeyan",
+    name: "KARTHIKEYAN.A",
+    email: "karthikeyan@truflow.com",
+    signature: "/signature/signature-karthikeyan.jpeg",
+    roleName: "Technical Reviewer",
+  },
+  {
+    _id: "sig-kannathasan",
+    name: "KANNATHASAN",
+    email: "kannathasan@truflow.com",
+    signature: "/signature/signature-kannadhasan.png",
+    roleName: "Approver",
+  },
+  {
+    _id: "sig-admin",
+    name: "System Administrator",
+    email: "admin@truflow.com",
+    signature: "",
+    roleName: "System Administrator",
+  },
+  {
+    _id: "sig-qe",
+    name: "Quality Engineer",
+    email: "qe@truflow.com",
+    signature: "",
+    roleName: "Quality Engineer",
+  },
+];
 
 interface HydroTestFormProps {
   data: HydroTestCertificateData;
@@ -54,20 +93,28 @@ export const HydroTestForm: React.FC<HydroTestFormProps> = ({
     signatories: true,
   });
 
-  const [signatories, setSignatories] = useState<SignatoryUser[]>([]);
+  const [signatories, setSignatories] = useState<SignatoryUser[]>(DEFAULT_SIGNATORIES);
 
   useEffect(() => {
     let ignore = false;
     async function loadSignatories() {
       try {
-        const res = await fetch("/api/users?status=active");
-        if (!res.ok) return;
-        const result = await res.json();
-        const usersList: SignatoryUser[] = Array.isArray(result)
-          ? result
-          : result?.data || [];
-        if (!ignore && Array.isArray(usersList)) {
-          setSignatories(usersList);
+        const res = await fetch("/api/users/signatories");
+        if (res.ok) {
+          const json = await res.json();
+          if (!ignore && Array.isArray(json.signatories) && json.signatories.length > 0) {
+            const apiList: SignatoryUser[] = json.signatories;
+            const merged = [...apiList];
+            for (const def of DEFAULT_SIGNATORIES) {
+              const exists = merged.some(
+                (u) => u.name.trim().toLowerCase() === def.name.trim().toLowerCase()
+              );
+              if (!exists) {
+                merged.push(def);
+              }
+            }
+            setSignatories(merged);
+          }
         }
       } catch (err) {
         console.error("Failed to load signatories:", err);
@@ -189,7 +236,7 @@ export const HydroTestForm: React.FC<HydroTestFormProps> = ({
           </span>
           <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
             <span>Hydro Test Certificate</span>
-            <span className="text-[11px] font-mono px-2 py-0.5 rounded-md bg-blue-100 text-blue-700 font-bold">
+            <span className="text-[11px] font-mono px-2 py-0.5 rounded-md bg-orange-100 text-orange-700 font-bold">
               EN 10204 3.1
             </span>
           </h2>
@@ -251,7 +298,7 @@ export const HydroTestForm: React.FC<HydroTestFormProps> = ({
           className="p-4 sm:p-5 flex items-center justify-between cursor-pointer bg-slate-50/70 border-b border-slate-100 hover:bg-slate-50 transition"
         >
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs">
+            <div className="w-8 h-8 rounded-xl bg-orange-100 text-orange-700 flex items-center justify-center font-bold text-xs">
               1
             </div>
             <div>
@@ -455,7 +502,7 @@ export const HydroTestForm: React.FC<HydroTestFormProps> = ({
           className="p-4 sm:p-5 flex items-center justify-between cursor-pointer bg-slate-50/70 border-b border-slate-100 hover:bg-slate-50 transition"
         >
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs">
+            <div className="w-8 h-8 rounded-xl bg-orange-100 text-orange-700 flex items-center justify-center font-bold text-xs">
               2
             </div>
             <div>
@@ -482,7 +529,7 @@ export const HydroTestForm: React.FC<HydroTestFormProps> = ({
             {/* Test standard rule */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-200">
               <div className="flex items-center gap-2">
-                <Activity className="w-4 h-4 text-blue-600" />
+                <Activity className="w-4 h-4 text-orange-600" />
                 <span className="text-xs font-bold text-slate-800">
                   TEST ACCORDING TO :
                 </span>
@@ -530,7 +577,7 @@ export const HydroTestForm: React.FC<HydroTestFormProps> = ({
                     key={key}
                     className={`p-4 rounded-2xl border transition-all ${
                       isEnabled
-                        ? "bg-white border-blue-200 shadow-xs"
+                        ? "bg-white border-orange-200 shadow-xs"
                         : "bg-slate-50/60 border-slate-200 opacity-80"
                     }`}
                   >
@@ -542,7 +589,7 @@ export const HydroTestForm: React.FC<HydroTestFormProps> = ({
                             type="checkbox"
                             checked={isEnabled}
                             onChange={(e) => handleTestToggle(key, e.target.checked)}
-                            className="w-4 h-4 accent-blue-600 rounded cursor-pointer"
+                            className="w-4 h-4 accent-orange-600 rounded cursor-pointer"
                           />
                           <span
                             className={`text-xs font-black tracking-tight ${
@@ -613,7 +660,7 @@ export const HydroTestForm: React.FC<HydroTestFormProps> = ({
                                     "Zero Leak - Accepted"
                                   )
                                 }
-                                className="text-[9px] text-blue-600 hover:underline"
+                                className="text-[9px] text-orange-600 hover:underline"
                               >
                                 Set Accepted
                               </button>
@@ -700,7 +747,7 @@ export const HydroTestForm: React.FC<HydroTestFormProps> = ({
           className="p-4 sm:p-5 flex items-center justify-between cursor-pointer bg-slate-50/70 border-b border-slate-100 hover:bg-slate-50 transition"
         >
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs">
+            <div className="w-8 h-8 rounded-xl bg-orange-100 text-orange-700 flex items-center justify-center font-bold text-xs">
               3
             </div>
             <div>
@@ -741,7 +788,7 @@ export const HydroTestForm: React.FC<HydroTestFormProps> = ({
           className="p-4 sm:p-5 flex items-center justify-between cursor-pointer bg-slate-50/70 border-b border-slate-100 hover:bg-slate-50 transition"
         >
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs">
+            <div className="w-8 h-8 rounded-xl bg-orange-100 text-orange-700 flex items-center justify-center font-bold text-xs">
               4
             </div>
             <div>
@@ -749,7 +796,7 @@ export const HydroTestForm: React.FC<HydroTestFormProps> = ({
                 Signatories &amp; Certification Sign-Off
               </h3>
               <p className="text-xs text-slate-500">
-                Prepared by, Witnessed by, and Approved by signatories
+                Prepared by, Reviewed by, and Approved by signatories
               </p>
             </div>
           </div>
@@ -761,111 +808,217 @@ export const HydroTestForm: React.FC<HydroTestFormProps> = ({
         </div>
 
         {openSections.signatories && (
-          <div className="p-5 sm:p-6 space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {/* Prepared By */}
-              <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-                <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wide block">
-                  Prepared By
-                </span>
+          <div className="p-5 space-y-6 text-xs">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              
+              {/* 1. PREPARED BY */}
+              <div className="space-y-2 border border-slate-200 p-3.5 rounded-2xl bg-slate-50/50">
+                <label className="block font-bold text-slate-800 flex items-center gap-1.5">
+                  <UserCheck className="w-4 h-4 text-[#FF2D01]" />
+                  <span>1. PREPARED BY</span>
+                </label>
                 <select
-                  value={data.preparedBy || ""}
+                  value={
+                    signatories.find(
+                      (u) => u.name.trim().toLowerCase() === (data.preparedBy || "").trim().toLowerCase()
+                    )?._id || ""
+                  }
                   onChange={(e) => {
-                    const selected = signatories.find((s) => s.name === e.target.value);
-                    onChange({
-                      ...data,
-                      preparedBy: e.target.value,
-                      preparedSignatureUrl: selected?.signature || data.preparedSignatureUrl,
-                    });
+                    const selId = e.target.value;
+                    if (!selId) {
+                      onChange({
+                        ...data,
+                        preparedBy: "",
+                        preparedSignatureUrl: "",
+                      });
+                      return;
+                    }
+                    const sel = signatories.find((u) => u._id === selId);
+                    if (sel) {
+                      const sigUrl =
+                        sel.signature ||
+                        DEFAULT_SIGNATORIES.find(
+                          (d) => d.name.trim().toLowerCase() === sel.name.trim().toLowerCase()
+                        )?.signature ||
+                        "";
+                      onChange({
+                        ...data,
+                        preparedBy: sel.name,
+                        preparedSignatureUrl: sigUrl,
+                      });
+                    }
                   }}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 bg-white font-bold"
+                  className="w-full border border-slate-300 rounded-xl px-2.5 py-1.5 bg-white outline-none focus:ring-1 focus:ring-[#FF2D01] text-slate-900 cursor-pointer font-medium"
                 >
-                  <option value="">-- Select or type manually --</option>
-                  {signatories.map((s) => (
-                    <option key={s._id} value={s.name}>
-                      {s.name} ({s.roleName || "User"})
+                  <option value="">-- Select Signatory --</option>
+                  {signatories.map((u) => (
+                    <option key={u._id} value={u._id}>
+                      {u.name} {u.roleName ? `(${u.roleName})` : ""}
                     </option>
                   ))}
-                  <option value="SIVAGANESHAN.V.A">SIVAGANESHAN.V.A</option>
-                  <option value="Quality Engineer">Quality Engineer</option>
                 </select>
                 <input
                   type="text"
                   value={data.preparedBy || ""}
                   onChange={(e) => handleFieldChange("preparedBy", e.target.value)}
-                  placeholder="Or enter custom name"
-                  className="w-full px-3 py-1.5 text-xs rounded-xl border border-slate-200 bg-white"
+                  placeholder="Or type custom name"
+                  className="w-full border border-slate-300 rounded-xl px-2.5 py-1.5 bg-white outline-none focus:ring-1 focus:ring-[#FF2D01] text-slate-900"
                 />
+                {data.preparedSignatureUrl && (
+                  <div className="p-2 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-2">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={data.preparedSignatureUrl}
+                      alt="Prepared Sign"
+                      className="h-7 w-auto object-contain mix-blend-multiply"
+                    />
+                    <span className="text-[10px] font-bold text-emerald-800">Sign Linked</span>
+                  </div>
+                )}
               </div>
 
-              {/* Witnessed By */}
-              <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-                <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wide block">
-                  Witnessed By
-                </span>
+              {/* 2. REVIEWED BY */}
+              <div className="space-y-2 border border-slate-200 p-3.5 rounded-2xl bg-slate-50/50">
+                <label className="block font-bold text-slate-800 flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4 text-orange-600" />
+                  <span>2. REVIEWED BY</span>
+                </label>
                 <select
-                  value={data.witnessedBy || ""}
+                  value={
+                    signatories.find(
+                      (u) =>
+                        u.name.trim().toLowerCase() ===
+                        (data.reviewedBy || data.witnessedBy || "").trim().toLowerCase()
+                    )?._id || ""
+                  }
                   onChange={(e) => {
-                    const selected = signatories.find((s) => s.name === e.target.value);
-                    onChange({
-                      ...data,
-                      witnessedBy: e.target.value,
-                      witnessSignatureUrl: selected?.signature || data.witnessSignatureUrl,
-                    });
+                    const selId = e.target.value;
+                    if (!selId) {
+                      onChange({
+                        ...data,
+                        reviewedBy: "",
+                        reviewedSignatureUrl: "",
+                        witnessedBy: "",
+                        witnessSignatureUrl: "",
+                      });
+                      return;
+                    }
+                    const sel = signatories.find((u) => u._id === selId);
+                    if (sel) {
+                      const sigUrl =
+                        sel.signature ||
+                        DEFAULT_SIGNATORIES.find(
+                          (d) => d.name.trim().toLowerCase() === sel.name.trim().toLowerCase()
+                        )?.signature ||
+                        "";
+                      onChange({
+                        ...data,
+                        reviewedBy: sel.name,
+                        reviewedSignatureUrl: sigUrl,
+                        witnessedBy: sel.name,
+                        witnessSignatureUrl: sigUrl,
+                      });
+                    }
                   }}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 bg-white font-bold"
+                  className="w-full border border-slate-300 rounded-xl px-2.5 py-1.5 bg-white outline-none focus:ring-1 focus:ring-[#FF2D01] text-slate-900 cursor-pointer font-medium"
                 >
-                  <option value="">-- Select or type manually --</option>
-                  {signatories.map((s) => (
-                    <option key={s._id} value={s.name}>
-                      {s.name} ({s.roleName || "User"})
+                  <option value="">-- Select Signatory --</option>
+                  {signatories.map((u) => (
+                    <option key={u._id} value={u._id}>
+                      {u.name} {u.roleName ? `(${u.roleName})` : ""}
                     </option>
                   ))}
-                  <option value="KARTHIKEYAN.A">KARTHIKEYAN.A</option>
-                  <option value="SIVAGANESHAN.V.A">SIVAGANESHAN.V.A</option>
                 </select>
                 <input
                   type="text"
-                  value={data.witnessedBy || ""}
-                  onChange={(e) => handleFieldChange("witnessedBy", e.target.value)}
-                  placeholder="Or enter custom name"
-                  className="w-full px-3 py-1.5 text-xs rounded-xl border border-slate-200 bg-white"
-                />
-              </div>
-
-              {/* Approved by */}
-              <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-                <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wide block">
-                  Approved by
-                </span>
-                <select
-                  value={data.approvedBy || ""}
+                  value={data.reviewedBy || data.witnessedBy || ""}
                   onChange={(e) => {
-                    const selected = signatories.find((s) => s.name === e.target.value);
                     onChange({
                       ...data,
-                      approvedBy: e.target.value,
-                      approvedSignatureUrl: selected?.signature || data.approvedSignatureUrl,
+                      reviewedBy: e.target.value,
+                      witnessedBy: e.target.value,
                     });
                   }}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 bg-white font-bold"
+                  placeholder="Or type custom name"
+                  className="w-full border border-slate-300 rounded-xl px-2.5 py-1.5 bg-white outline-none focus:ring-1 focus:ring-[#FF2D01] text-slate-900"
+                />
+                {(data.reviewedSignatureUrl || data.witnessSignatureUrl) && (
+                  <div className="p-2 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-2">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={data.reviewedSignatureUrl || data.witnessSignatureUrl}
+                      alt="Reviewed Sign"
+                      className="h-7 w-auto object-contain mix-blend-multiply"
+                    />
+                    <span className="text-[10px] font-bold text-emerald-800">Sign Linked</span>
+                  </div>
+                )}
+              </div>
+
+              {/* 3. APPROVED BY */}
+              <div className="space-y-2 border border-slate-200 p-3.5 rounded-2xl bg-slate-50/50">
+                <label className="block font-bold text-slate-800 flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                  <span>3. APPROVED BY</span>
+                </label>
+                <select
+                  value={
+                    signatories.find(
+                      (u) => u.name.trim().toLowerCase() === (data.approvedBy || "").trim().toLowerCase()
+                    )?._id || ""
+                  }
+                  onChange={(e) => {
+                    const selId = e.target.value;
+                    if (!selId) {
+                      onChange({
+                        ...data,
+                        approvedBy: "",
+                        approvedSignatureUrl: "",
+                      });
+                      return;
+                    }
+                    const sel = signatories.find((u) => u._id === selId);
+                    if (sel) {
+                      const sigUrl =
+                        sel.signature ||
+                        DEFAULT_SIGNATORIES.find(
+                          (d) => d.name.trim().toLowerCase() === sel.name.trim().toLowerCase()
+                        )?.signature ||
+                        "";
+                      onChange({
+                        ...data,
+                        approvedBy: sel.name,
+                        approvedSignatureUrl: sigUrl,
+                      });
+                    }
+                  }}
+                  className="w-full border border-slate-300 rounded-xl px-2.5 py-1.5 bg-white outline-none focus:ring-1 focus:ring-[#FF2D01] text-slate-900 cursor-pointer font-medium"
                 >
-                  <option value="">-- Select or type manually --</option>
-                  {signatories.map((s) => (
-                    <option key={s._id} value={s.name}>
-                      {s.name} ({s.roleName || "User"})
+                  <option value="">-- Select Signatory --</option>
+                  {signatories.map((u) => (
+                    <option key={u._id} value={u._id}>
+                      {u.name} {u.roleName ? `(${u.roleName})` : ""}
                     </option>
                   ))}
-                  <option value="System Administrator">System Administrator</option>
-                  <option value="KARTHIKEYAN.A">KARTHIKEYAN.A</option>
                 </select>
                 <input
                   type="text"
                   value={data.approvedBy || ""}
                   onChange={(e) => handleFieldChange("approvedBy", e.target.value)}
-                  placeholder="Or enter custom name"
-                  className="w-full px-3 py-1.5 text-xs rounded-xl border border-slate-200 bg-white"
+                  placeholder="Or type custom name"
+                  className="w-full border border-slate-300 rounded-xl px-2.5 py-1.5 bg-white outline-none focus:ring-1 focus:ring-[#FF2D01] text-slate-900"
                 />
+                {data.approvedSignatureUrl && (
+                  <div className="p-2 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-2">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={data.approvedSignatureUrl}
+                      alt="Approved Sign"
+                      className="h-7 w-auto object-contain mix-blend-multiply"
+                    />
+                    <span className="text-[10px] font-bold text-emerald-800">Sign Linked</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>

@@ -4,7 +4,8 @@ export type CertificateType =
   | "material-test"
   | "hydro-test"
   | "final-dimensional-report"
-  | "warranty-certificate";
+  | "warranty-certificate"
+  | "painting-report";
 
 export type CertificateStatus =
   | "DRAFT"
@@ -53,12 +54,56 @@ export interface ValveFunctionalTestLineItem {
   id?: string;
   sNo: number | string;
   tagNo: string;
+  actuatorSerialNo?: string;
+
+  // Stroke cycles (Stroke 1, 2, 3)
+  stroke1Open?: string;
+  stroke1Close?: string;
+  stroke2Open?: string;
+  stroke2Close?: string;
+  stroke3Open?: string;
+  stroke3Close?: string;
+
+  // Overall valve test result
+  valveFunction?: string;
+
+  // Optional specifications (inherited from product group or overridden per item)
+  valveType?: string;
+  valveSize?: string;
+  moc?: string;
+  endConnection?: string;
+  actType?: string;
+  model?: string;
+  failPosition?: string;
+
+  // Accessories with select/ignore checkboxes
+  hasLsb?: boolean;
+  lsbModelNo?: string;
+  lsbFunction?: string;
+
+  hasSov?: boolean;
+  sovModelNo?: string;
+  sovFunction?: string;
+
+  hasPositioner?: boolean;
+  posinier?: string;
+  poFunction?: string;
+
+  hasAfr?: boolean;
+  afrModelNo?: string;
+  afrFunction?: string;
+}
+
+export interface ValveFunctionalTestProductGroup {
+  id: string;
+  groupName?: string;
   valveType: string;
   valveSize: string;
-  moc: string;
   endConnection: string;
+  pressureRating?: string;
+  moc?: string;
   actType: string;
-  model: string;
+  actuatorModel: string;
   failPosition: string;
 
   // Accessories with select/ignore checkboxes
@@ -78,26 +123,29 @@ export interface ValveFunctionalTestLineItem {
   afrModelNo?: string;
   afrFunction?: string;
 
-  // Stroke cycles (Stroke 1, 2, 3)
-  stroke1Open?: string;
-  stroke1Close?: string;
-  stroke2Open?: string;
-  stroke2Close?: string;
-  stroke3Open?: string;
-  stroke3Close?: string;
-
-  // Overall valve test result
+  // Common Functional results
+  hasValve?: boolean;
   valveFunction?: string;
+  hasActuator?: boolean;
+  actuatorFunction?: string;
+  valveAssemblyFunction?: string;
+
+  // Line items for this group (max 15 per page in PDF)
+  items: ValveFunctionalTestLineItem[];
 }
 
 export interface ValveFunctionalTestCertificateData {
   customerName: string;
   customerPO: string;
   salesOrderNo: string;
-  placeOfTest: string;
+  placeOfTest?: string;
   dateOfTest: string;
   testedBy: string;
 
+  // Identical Product Groups (each group contains its shared specifications and items)
+  productGroups?: ValveFunctionalTestProductGroup[];
+
+  // Flat line items array (kept synchronized for backward compatibility and search)
   lineItems: ValveFunctionalTestLineItem[];
 
   declarationText?: string;
@@ -219,8 +267,13 @@ export interface MaterialHydroTestCertificateData {
   preparedSignatureUrl?: string;
   witnessedBy?: string;
   witnessSignatureUrl?: string;
+  reviewedBy?: string;
+  reviewedSignatureUrl?: string;
   approvedBy?: string;
   approvedSignatureUrl?: string;
+  sealStampUrl?: string;
+  showSignatures?: boolean;
+  showStamp?: boolean;
   status?: string;
 
   // Custom fields
@@ -253,8 +306,13 @@ export interface MaterialTestCertificateData {
   preparedSignatureUrl?: string;
   witnessedBy?: string;
   witnessSignatureUrl?: string;
+  reviewedBy?: string;
+  reviewedSignatureUrl?: string;
   approvedBy?: string;
   approvedSignatureUrl?: string;
+  sealStampUrl?: string;
+  showSignatures?: boolean;
+  showStamp?: boolean;
   status?: string;
 
   // Custom fields
@@ -296,8 +354,13 @@ export interface HydroTestCertificateData {
   preparedSignatureUrl?: string;
   witnessedBy?: string;
   witnessSignatureUrl?: string;
+  reviewedBy?: string;
+  reviewedSignatureUrl?: string;
   approvedBy?: string;
   approvedSignatureUrl?: string;
+  sealStampUrl?: string;
+  showSignatures?: boolean;
+  showStamp?: boolean;
   status?: string;
 
   // Custom fields
@@ -387,7 +450,10 @@ export interface WarrantyCertificateData {
   // Terms & Content
   salutation: string;   // e.g. "Dear Sir," or "To whom so here it may concern,"
   poConfirmationText?: string;
+  declarationText?: string;
+  warrantyPeriod?: string;
   warrantyTermsText?: string;
+  termsOfWarranty?: string[];
   warrantyPeriodSupply?: string;        // e.g. "18 months from the date of invoice" / "18 months from the date of supply"
   warrantyPeriodInstallation?: string;  // e.g. "12 months from the date of installation"
   warrantyNoteText?: string;            // Exclusions note
@@ -416,13 +482,104 @@ export interface WarrantyCertificateData {
   customFields?: SectionCustomFields;
 }
 
+
+export interface AtmosphericConditionRow {
+  id: string;
+  dateTime: string;
+  process: string;
+  dryBulbTemp: string;
+  wetBulbTemp: string;
+  dewPoint: string;
+  rh: string;
+  steelTemp: string;
+}
+
+export interface PaintingCoatItem {
+  id: string;
+  coatName: string;
+  appliedCoat: string;
+  applicationMethod: string;
+  paintMfgName: string;
+  productName: string;
+  colourShade: string;
+  dftRequired: string;
+  dftObserved: string;
+}
+
+export interface PaintingReportCertificateData {
+  recNo?: string;
+  reportNo?: string;
+  certificateNo?: string;
+  date?: string;
+  location?: string;
+  customerName: string;
+  customerPO: string;
+  jobType?: string;
+  valveType?: string;
+  valveSize?: string;
+  colourShade: string;
+  tagNo: string;
+  atmosphericConditionAtWorkSite: string;
+  qty: string;
+
+  atmosphericConditions: AtmosphericConditionRow[];
+
+  abrasiveCleaning: string;
+  abrasiveCheckedForCleanliness: string;
+  dustLevel: string;
+  specifiedStandard: string;
+  profileThicknessRequired: string;
+  surfaceCleanliness: string;
+  observed: string;
+
+  paintingSystemHeader?: string;
+  coats: PaintingCoatItem[];
+
+  pullOffTestRequired?: string;
+  pullOffTestActual?: string;
+  pullOffTestLocation?: string;
+
+  adhesionTestRequired?: string;
+  adhesionTestActual?: string;
+  adhesionTestLocation?: string;
+
+  instrumentUsed: string;
+  calibrationOfInstruments: string;
+  inspectionComments: string;
+
+  declarationText?: string;
+
+  preparedBy: string;
+  preparedDesignation?: string;
+  preparedSignatureUrl?: string;
+
+  reviewedBy: string;
+  reviewedDesignation?: string;
+  reviewedSignatureUrl?: string;
+
+  approvedBy: string;
+  approvedDesignation?: string;
+  approvedSignatureUrl?: string;
+
+  sealStampUrl?: string;
+  showSignatures?: boolean;
+  showStamp?: boolean;
+
+  companyName?: string;
+  companyAddress?: string;
+  companyWebsite?: string;
+  companyEmail?: string;
+  gstNo?: string;
+}
+
 export type AnyCertificateData =
   | ValveFunctionalTestCertificateData
   | MaterialHydroTestCertificateData
   | MaterialTestCertificateData
   | HydroTestCertificateData
   | FinalDimensionalReportCertificateData
-  | WarrantyCertificateData;
+  | WarrantyCertificateData
+  | PaintingReportCertificateData;
 
 export type CertificateErrors = Record<string, string>;
 

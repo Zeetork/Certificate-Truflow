@@ -9,6 +9,7 @@ import { CertificateRenderer } from "@/components/certificates/CertificateRender
 import { ResponsiveCertificatePreview } from "@/components/certificates/common/ResponsiveCertificatePreview";
 import { validateCertificate } from "@/lib/certificateValidation";
 import { ICertificate, AnyCertificateData } from "@/types/certificate";
+import { calculateValveFunctionalTestPages } from "@/lib/certificatePagination";
 import { ArrowLeft, Eye, AlertCircle, ShieldAlert, FileText } from "lucide-react";
 
 interface PageProps {
@@ -124,7 +125,9 @@ export default function EditCertificatePage({ params }: PageProps) {
   }
 
   const lineItemCount =
-    (formData as unknown as { lineItems?: unknown[] })?.lineItems?.length || 1;
+    certificateType === "valve-functional-test"
+      ? calculateValveFunctionalTestPages(formData)
+      : (formData as unknown as { lineItems?: unknown[] })?.lineItems?.length || 1;
 
   const handleSave = async (submitAfterSave = false) => {
     if (submitAfterSave && certificateType === "solenoid-valve") {

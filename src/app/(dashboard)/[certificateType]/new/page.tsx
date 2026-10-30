@@ -8,6 +8,7 @@ import { CertificateRenderer } from "@/components/certificates/CertificateRender
 import { ResponsiveCertificatePreview } from "@/components/certificates/common/ResponsiveCertificatePreview";
 import { validateCertificate } from "@/lib/certificateValidation";
 import { AnyCertificateData } from "@/types/certificate";
+import { calculateValveFunctionalTestPages } from "@/lib/certificatePagination";
 import { ArrowLeft, Eye, FileText } from "lucide-react";
 import Link from "next/link";
 
@@ -44,7 +45,9 @@ export default function NewCertificatePage({ params }: PageProps) {
 
   // Calculate line items count for multi-page certificates
   const lineItemCount =
-    (formData as unknown as { lineItems?: unknown[] })?.lineItems?.length || 1;
+    certificateType === "valve-functional-test"
+      ? calculateValveFunctionalTestPages(formData)
+      : (formData as unknown as { lineItems?: unknown[] })?.lineItems?.length || 1;
 
   const handleSave = async (initialStatus: "DRAFT" | "PENDING_APPROVAL") => {
     // If submitting for approval, enforce strict validation

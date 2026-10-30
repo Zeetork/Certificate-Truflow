@@ -5,6 +5,7 @@ import {
   DEFAULT_HYDRO_TEST_DATA,
   DEFAULT_FINAL_DIMENSIONAL_REPORT_DATA,
   DEFAULT_WARRANTY_CERTIFICATE_DATA,
+  DEFAULT_PAINTING_REPORT_DATA,
 } from "@/lib/certificateDefaults";
 
 export interface CertificateTypeConfig {
@@ -22,7 +23,7 @@ export const CERTIFICATE_TYPES: Record<CertificateType, CertificateTypeConfig> =
   "valve-functional-test": {
     key: "valve-functional-test",
     name: "Valve Functional Test Report",
-    prefix: "VFR",
+    prefix: "TFC",
     category: "functional-report",
     image: "/truflow-logo.png",
     description: "Functional test and operational performance report for valves, actuators, and pneumatic accessories",
@@ -43,6 +44,51 @@ export const CERTIFICATE_TYPES: Record<CertificateType, CertificateTypeConfig> =
       witnessSignatureUrl: "/signature/signature-sivaganeshan.png",
       verifiedSignatureUrl: "/signature/signature-karthikeyan.jpeg",
       showSignatures: true,
+      productGroups: [
+        {
+          id: "group-1",
+          groupName: "Ball Valve 20",
+          valveType: "Ball Valve",
+          valveSize: "20",
+          endConnection: "Flanged",
+          pressureRating: "4 bar",
+          moc: "WCB Body ss316/PTF",
+          actType: "pneumatic actuator",
+          actuatorModel: "ZRC20SA",
+          failPosition: "Fail Close / Fail Open",
+          hasLsb: false,
+          lsbModelNo: "",
+          lsbFunction: "Pass",
+          hasSov: false,
+          sovModelNo: "",
+          sovFunction: "Pass",
+          hasPositioner: false,
+          posinier: "",
+          poFunction: "Pass",
+          hasAfr: false,
+          afrModelNo: "",
+          hasValve: true,
+          valveFunction: "Pass",
+          hasActuator: true,
+          actuatorFunction: "Pass",
+          valveAssemblyFunction: "Pass",
+          items: [
+            {
+              id: "item-1",
+              sNo: 1,
+              tagNo: "1",
+              actuatorSerialNo: "",
+              stroke1Open: "0.3 sec",
+              stroke1Close: "0.3 sec",
+              stroke2Open: "0.3 sec",
+              stroke2Close: "0.3 sec",
+              stroke3Open: "0.3 sec",
+              stroke3Close: "0.3 sec",
+              valveFunction: "Pass",
+            },
+          ],
+        },
+      ],
       lineItems: [
         {
           id: "item-1",
@@ -81,7 +127,7 @@ export const CERTIFICATE_TYPES: Record<CertificateType, CertificateTypeConfig> =
   "material-hydro-test": {
     key: "material-hydro-test",
     name: "Material & Hydro Test Certificate",
-    prefix: "MHT",
+    prefix: "TFC",
     category: "certificate",
     image: "/material-hydro-test.png",
     description: "Material & Hydrostatic Pressure Test Certificate according to EN 10204 3.1",
@@ -90,7 +136,7 @@ export const CERTIFICATE_TYPES: Record<CertificateType, CertificateTypeConfig> =
   "material-test": {
     key: "material-test",
     name: "Material Test Certificate",
-    prefix: "MTC",
+    prefix: "TFC",
     category: "certificate",
     image: "/material-test.png",
     description: "Material Test Certificate according to EN 10204 3.1 with chemical composition and mechanical properties",
@@ -99,7 +145,7 @@ export const CERTIFICATE_TYPES: Record<CertificateType, CertificateTypeConfig> =
   "hydro-test": {
     key: "hydro-test",
     name: "Hydro Test Certificate",
-    prefix: "HTC",
+    prefix: "TFC",
     category: "certificate",
     image: "/hydro-test.png",
     description: "Hydrostatic & Pneumatic Pressure Test Certificate according to EN 10204 3.1 with inspection results",
@@ -108,7 +154,7 @@ export const CERTIFICATE_TYPES: Record<CertificateType, CertificateTypeConfig> =
   "final-dimensional-report": {
     key: "final-dimensional-report",
     name: "Final Dimensional Report",
-    prefix: "FDR",
+    prefix: "TFC",
     category: "certificate",
     image: "/FINAL DIMENSIONAL REPORT.png",
     description: "Final dimensional inspection report with customizable measurement columns and drawing tolerances",
@@ -117,11 +163,20 @@ export const CERTIFICATE_TYPES: Record<CertificateType, CertificateTypeConfig> =
   "warranty-certificate": {
     key: "warranty-certificate",
     name: "Warranty Certificate",
-    prefix: "WC",
+    prefix: "TFC",
     category: "certificate",
     image: "/warranty-certificate.png",
     description: "Standard warranty certificate with customer order metadata, quality confirmation, and warranty terms",
     defaultData: DEFAULT_WARRANTY_CERTIFICATE_DATA as unknown as Record<string, unknown>,
+  },
+  "painting-report": {
+    key: "painting-report",
+    name: "Painting Inspection Report",
+    prefix: "TFC",
+    category: "certificate",
+    image: "/truflow-logo.png",
+    description: "Surface preparation and painting inspection report for valves, actuators, and accessories",
+    defaultData: DEFAULT_PAINTING_REPORT_DATA as unknown as Record<string, unknown>,
   },
 };
 

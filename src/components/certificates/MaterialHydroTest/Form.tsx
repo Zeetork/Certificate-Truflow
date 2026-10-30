@@ -24,6 +24,14 @@ import {
   AlertCircle,
   HelpCircle,
 } from "lucide-react";
+import {
+  findMaterialSpec,
+  getChemicalReference,
+  getMechanicalReference,
+  STANDARD_GRADE_NAMES,
+  ASTM_PRESET_MATERIALS,
+  ALL_PRESET_MATERIALS,
+} from "@/lib/materialSpecs";
 
 interface SignatoryUser {
   _id: string;
@@ -32,6 +40,44 @@ interface SignatoryUser {
   signature?: string;
   roleName?: string;
 }
+
+const DEFAULT_SIGNATORIES: SignatoryUser[] = [
+  {
+    _id: "sig-sivaganeshan",
+    name: "SIVAGANESHAN.V.A",
+    email: "sivaganeshan@truflow.com",
+    signature: "/signature/signature-sivaganeshan.png",
+    roleName: "Quality Engineer",
+  },
+  {
+    _id: "sig-karthikeyan",
+    name: "KARTHIKEYAN.A",
+    email: "karthikeyan@truflow.com",
+    signature: "/signature/signature-karthikeyan.jpeg",
+    roleName: "Technical Reviewer",
+  },
+  {
+    _id: "sig-kannathasan",
+    name: "KANNATHASAN",
+    email: "kannathasan@truflow.com",
+    signature: "/signature/signature-kannadhasan.png",
+    roleName: "Approver",
+  },
+  {
+    _id: "sig-admin",
+    name: "System Administrator",
+    email: "admin@truflow.com",
+    signature: "",
+    roleName: "System Administrator",
+  },
+  {
+    _id: "sig-qe",
+    name: "Quality Engineer",
+    email: "qe@truflow.com",
+    signature: "",
+    roleName: "Quality Engineer",
+  },
+];
 
 interface MaterialHydroTestFormProps {
   data: MaterialHydroTestCertificateData;
@@ -112,7 +158,8 @@ export const MaterialHydroTestForm: React.FC<MaterialHydroTestFormProps> = ({
     signatories: true,
   });
 
-  const [signatories, setSignatories] = useState<SignatoryUser[]>([]);
+  const [signatories, setSignatories] = useState<SignatoryUser[]>(DEFAULT_SIGNATORIES);
+  const [customMaterialRows, setCustomMaterialRows] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     let ignore = false;
@@ -121,8 +168,18 @@ export const MaterialHydroTestForm: React.FC<MaterialHydroTestFormProps> = ({
         const res = await fetch("/api/users/signatories");
         if (res.ok) {
           const json = await res.json();
-          if (!ignore && json.signatories) {
-            setSignatories(json.signatories);
+          if (!ignore && Array.isArray(json.signatories) && json.signatories.length > 0) {
+            const apiList: SignatoryUser[] = json.signatories;
+            const merged = [...apiList];
+            for (const def of DEFAULT_SIGNATORIES) {
+              const exists = merged.some(
+                (u) => u.name.trim().toLowerCase() === def.name.trim().toLowerCase()
+              );
+              if (!exists) {
+                merged.push(def);
+              }
+            }
+            setSignatories(merged);
           }
         }
       } catch (e) {
@@ -1230,7 +1287,21 @@ export const MaterialHydroTestForm: React.FC<MaterialHydroTestFormProps> = ({
 
         {openSections.materialProps && (
           <div className="p-5 sm:p-6 space-y-4">
-            {materialItems.map((mat, index) => (
+            {materialItems.map((mat, index) => {
+              const rowKey = mat.id || `mat-${index}`;
+              const activeSpec = findMaterialSpec(mat.material);
+              const isCustom =
+                customMaterialRows[rowKey] ||
+                Boolean(mat.material && !ALL_PRESET_MATERIALS.includes(mat.material));
+
+              const tsRef = getMechanicalReference(activeSpec, "tsMpa");
+              const ysRef = getMechanicalReference(activeSpec, "ysMpa");
+              const elRef = getMechanicalReference(activeSpec, "elPercent");
+              const raRef = getMechanicalReference(activeSpec, "raPsi");
+              const hardnRef = getMechanicalReference(activeSpec, "hardn");
+              const impactRef = getMechanicalReference(activeSpec, "impactTestTemp");
+
+              return (
               <div
                 key={mat.id || `mat-${index}`}
                 className="p-4 rounded-2xl border border-slate-200 bg-white hover:border-slate-300 transition space-y-3"
@@ -1245,6 +1316,11 @@ export const MaterialHydroTestForm: React.FC<MaterialHydroTestFormProps> = ({
                       {mat.partName ? `${mat.partName} - ` : ""}
                       {mat.bodyHeatNo ? `Heat: ${mat.bodyHeatNo}` : `Part Entry #${index + 1}`}
                     </span>
+                    {activeSpec && (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-100 text-[#FF2D01] border border-orange-200/60 font-mono">
+                        Spec: {activeSpec.name}
+                      </span>
+                    )}
                   </div>
 
                   <div className="flex items-center gap-1.5">
@@ -1317,26 +1393,93 @@ export const MaterialHydroTestForm: React.FC<MaterialHydroTestFormProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-500 mb-0.5">
-                      MATERIAL
-                    </label>
-                    <input
-                      type="text"
-                      value={mat.material || ""}
-                      onChange={(e) =>
-                        handleMaterialItemChange(index, "material", e.target.value)
+                    <div className="flex items-center justify-between mb-0.5">
+                      <label className="block text-[10px] font-bold text-slate-500">
+                        MATERIAL
+                      </label>
+                      {activeSpec && (
+                        <span className="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">
+                          {activeSpec.name}
+                        </span>
+                      )}
+                    </div>
+                    <select
+                      value={
+                        ALL_PRESET_MATERIALS.includes(mat.material)
+                          ? mat.material
+                          : mat.material
+                          ? "__custom__"
+                          : ""
                       }
-                      placeholder="e.g. ASTM A216 WCB"
-                      className="w-full px-2.5 py-1.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#FF2D01] focus:outline-none uppercase"
-                    />
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val === "__custom__") {
+                          setCustomMaterialRows((prev) => ({ ...prev, [rowKey]: true }));
+                        } else {
+                          setCustomMaterialRows((prev) => ({ ...prev, [rowKey]: false }));
+                          handleMaterialItemChange(index, "material", val);
+                        }
+                      }}
+                      className="w-full px-2.5 py-1.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#FF2D01] focus:outline-none uppercase font-semibold text-xs bg-white cursor-pointer"
+                    >
+                      <option value="">-- Select Material --</option>
+                      <optgroup label="Standard Grades (from meterial.json)">
+                        {STANDARD_GRADE_NAMES.map((name) => (
+                          <option key={name} value={name}>
+                            {name}
+                          </option>
+                        ))}
+                      </optgroup>
+                      <optgroup label="ASTM Specification Grades">
+                        {ASTM_PRESET_MATERIALS.map((name) => (
+                          <option key={name} value={name}>
+                            {name}
+                          </option>
+                        ))}
+                      </optgroup>
+                      <option value="__custom__">Custom / Enter manually...</option>
+                    </select>
+
+                    {isCustom && (
+                      <div className="mt-1 flex items-center gap-1.5">
+                        <input
+                          type="text"
+                          value={mat.material || ""}
+                          onChange={(e) =>
+                            handleMaterialItemChange(index, "material", e.target.value)
+                          }
+                          placeholder="Type custom grade..."
+                          className="w-full px-2 py-1 text-xs rounded-lg border border-orange-300 bg-orange-50/20 focus:ring-1 focus:ring-[#FF2D01] focus:outline-none uppercase font-semibold"
+                          autoFocus
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCustomMaterialRows((prev) => ({ ...prev, [rowKey]: false }));
+                            handleMaterialItemChange(index, "material", "WCB");
+                          }}
+                          className="text-[10px] text-slate-500 hover:text-slate-800 underline whitespace-nowrap"
+                          title="Reset to standard grade"
+                        >
+                          Reset
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
 
                 {/* Chemical Composition */}
                 <div className="pt-2 border-t border-slate-100">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">
-                    Chemical Composition %
-                  </span>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                      Chemical Composition %
+                    </span>
+                    {activeSpec && (
+                      <span className="text-[10px] text-slate-500 font-medium">
+                        Reference limits: <strong className="text-slate-800 font-bold font-mono">{activeSpec.name}</strong>
+                      </span>
+                    )}
+                  </div>
                   <div className="grid grid-cols-4 sm:grid-cols-7 lg:grid-cols-13 gap-1.5 text-xs">
                     {(
                       [
@@ -1354,38 +1497,66 @@ export const MaterialHydroTestForm: React.FC<MaterialHydroTestFormProps> = ({
                         { k: "other2", l: "Other 2" },
                         { k: "ce", l: "CE" },
                       ] as const
-                    ).map(({ k, l }) => (
-                      <div key={k}>
-                        <label className="block text-[9px] font-bold text-slate-500 text-center mb-0.5">
-                          {l}
-                        </label>
-                        <input
-                          type="text"
-                          value={mat[k as keyof MaterialHydroChemicalItem] || ""}
-                          onChange={(e) =>
-                            handleMaterialItemChange(
-                              index,
-                              k as keyof MaterialHydroChemicalItem,
-                              e.target.value
-                            )
-                          }
-                          placeholder="-"
-                          className="w-full px-1 py-1 text-center font-mono text-[11px] rounded-lg border border-slate-200 focus:ring-1 focus:ring-[#FF2D01] focus:outline-none"
-                        />
-                      </div>
-                    ))}
+                    ).map(({ k, l }) => {
+                      const refVal = getChemicalReference(activeSpec, k);
+                      return (
+                        <div key={k}>
+                          <label
+                            className="min-h-[24px] flex flex-col justify-end items-center text-center text-[9px] font-bold text-slate-600 mb-0.5 leading-tight"
+                            title={refVal ? `${l} (${refVal})` : l}
+                          >
+                            <span>
+                              {l}
+                              {refVal && (
+                                <span className="text-[#FF2D01] font-semibold text-[8px] ml-0.5">
+                                  ({refVal})
+                                </span>
+                              )}
+                            </span>
+                          </label>
+                          <input
+                            type="text"
+                            value={mat[k as keyof MaterialHydroChemicalItem] || ""}
+                            onChange={(e) =>
+                              handleMaterialItemChange(
+                                index,
+                                k as keyof MaterialHydroChemicalItem,
+                                e.target.value
+                              )
+                            }
+                            placeholder="-"
+                            className="w-full px-1 py-1 text-center font-mono text-[11px] rounded-lg border border-slate-200 focus:ring-1 focus:ring-[#FF2D01] focus:outline-none"
+                          />
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
 
                 {/* Mechanical Properties */}
                 <div className="pt-2 border-t border-slate-100">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">
-                    Mechanical Properties
-                  </span>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                      Mechanical Properties
+                    </span>
+                    {activeSpec && (
+                      <span className="text-[10px] text-slate-500 font-medium">
+                        Reference limits: <strong className="text-slate-800 font-bold font-mono">{activeSpec.name}</strong>
+                      </span>
+                    )}
+                  </div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-xs">
                     <div>
-                      <label className="block text-[9.5px] font-bold text-slate-500 mb-0.5">
-                        T.S (MPa)
+                      <label
+                        className="block text-[9.5px] font-bold text-slate-600 mb-0.5"
+                        title={tsRef ? `T.S (MPa) (${tsRef})` : "T.S (MPa)"}
+                      >
+                        <span>T.S (MPa)</span>
+                        {tsRef && (
+                          <span className="text-[#FF2D01] font-semibold text-[8.5px] ml-1">
+                            ({tsRef})
+                          </span>
+                        )}
                       </label>
                       <input
                         type="text"
@@ -1399,8 +1570,16 @@ export const MaterialHydroTestForm: React.FC<MaterialHydroTestFormProps> = ({
                     </div>
 
                     <div>
-                      <label className="block text-[9.5px] font-bold text-slate-500 mb-0.5">
-                        Y.S (MPa)
+                      <label
+                        className="block text-[9.5px] font-bold text-slate-600 mb-0.5"
+                        title={ysRef ? `Y.S (MPa) (${ysRef})` : "Y.S (MPa)"}
+                      >
+                        <span>Y.S (MPa)</span>
+                        {ysRef && (
+                          <span className="text-[#FF2D01] font-semibold text-[8.5px] ml-1">
+                            ({ysRef})
+                          </span>
+                        )}
                       </label>
                       <input
                         type="text"
@@ -1414,8 +1593,16 @@ export const MaterialHydroTestForm: React.FC<MaterialHydroTestFormProps> = ({
                     </div>
 
                     <div>
-                      <label className="block text-[9.5px] font-bold text-slate-500 mb-0.5">
-                        E.L (%)
+                      <label
+                        className="block text-[9.5px] font-bold text-slate-600 mb-0.5"
+                        title={elRef ? `E.L (%) (${elRef})` : "E.L (%)"}
+                      >
+                        <span>E.L (%)</span>
+                        {elRef && (
+                          <span className="text-[#FF2D01] font-semibold text-[8.5px] ml-1">
+                            ({elRef})
+                          </span>
+                        )}
                       </label>
                       <input
                         type="text"
@@ -1429,8 +1616,16 @@ export const MaterialHydroTestForm: React.FC<MaterialHydroTestFormProps> = ({
                     </div>
 
                     <div>
-                      <label className="block text-[9.5px] font-bold text-slate-500 mb-0.5">
-                        RAΨ (%)
+                      <label
+                        className="block text-[9.5px] font-bold text-slate-600 mb-0.5"
+                        title={raRef ? `RAΨ (%) (${raRef})` : "RAΨ (%)"}
+                      >
+                        <span>RAΨ (%)</span>
+                        {raRef && (
+                          <span className="text-[#FF2D01] font-semibold text-[8.5px] ml-1">
+                            ({raRef})
+                          </span>
+                        )}
                       </label>
                       <input
                         type="text"
@@ -1444,8 +1639,16 @@ export const MaterialHydroTestForm: React.FC<MaterialHydroTestFormProps> = ({
                     </div>
 
                     <div>
-                      <label className="block text-[9.5px] font-bold text-slate-500 mb-0.5">
-                        Hardn HB
+                      <label
+                        className="block text-[9.5px] font-bold text-slate-600 mb-0.5"
+                        title={hardnRef ? `Hardn HB (${hardnRef})` : "Hardn HB"}
+                      >
+                        <span>Hardn HB</span>
+                        {hardnRef && (
+                          <span className="text-[#FF2D01] font-semibold text-[8.5px] ml-1">
+                            ({hardnRef})
+                          </span>
+                        )}
                       </label>
                       <input
                         type="text"
@@ -1459,8 +1662,16 @@ export const MaterialHydroTestForm: React.FC<MaterialHydroTestFormProps> = ({
                     </div>
 
                     <div>
-                      <label className="block text-[9.5px] font-bold text-slate-500 mb-0.5">
-                        Impact Temp. AKV(J)
+                      <label
+                        className="block text-[9.5px] font-bold text-slate-600 mb-0.5"
+                        title={impactRef ? `Impact Temp. AKV(J) (${impactRef})` : "Impact Temp. AKV(J)"}
+                      >
+                        <span>Impact Temp. AKV(J)</span>
+                        {impactRef && (
+                          <span className="text-[#FF2D01] font-semibold text-[8.5px] ml-1">
+                            ({impactRef})
+                          </span>
+                        )}
                       </label>
                       <input
                         type="text"
@@ -1475,7 +1686,8 @@ export const MaterialHydroTestForm: React.FC<MaterialHydroTestFormProps> = ({
                   </div>
                 </div>
               </div>
-            ))}
+            );
+            })}
 
             {/* Bottom Add button */}
             <button
@@ -1507,7 +1719,7 @@ export const MaterialHydroTestForm: React.FC<MaterialHydroTestFormProps> = ({
                 Signatories &amp; Certification Sign-Off
               </h3>
               <p className="text-xs text-slate-500">
-                Prepared by, Witnessed by, and Approved by signatories
+                Prepared by, Reviewed by, and Approved by signatories
               </p>
             </div>
           </div>
@@ -1519,111 +1731,217 @@ export const MaterialHydroTestForm: React.FC<MaterialHydroTestFormProps> = ({
         </div>
 
         {openSections.signatories && (
-          <div className="p-5 sm:p-6 space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {/* Prepared By */}
-              <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-                <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wide block">
-                  Prepared By
-                </span>
+          <div className="p-5 space-y-6 text-xs">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              
+              {/* 1. PREPARED BY */}
+              <div className="space-y-2 border border-slate-200 p-3.5 rounded-2xl bg-slate-50/50">
+                <label className="block font-bold text-slate-800 flex items-center gap-1.5">
+                  <UserCheck className="w-4 h-4 text-[#FF2D01]" />
+                  <span>1. PREPARED BY</span>
+                </label>
                 <select
-                  value={data.preparedBy || ""}
+                  value={
+                    signatories.find(
+                      (u) => u.name.trim().toLowerCase() === (data.preparedBy || "").trim().toLowerCase()
+                    )?._id || ""
+                  }
                   onChange={(e) => {
-                    const selected = signatories.find((s) => s.name === e.target.value);
-                    onChange({
-                      ...data,
-                      preparedBy: e.target.value,
-                      preparedSignatureUrl: selected?.signature || data.preparedSignatureUrl,
-                    });
+                    const selId = e.target.value;
+                    if (!selId) {
+                      onChange({
+                        ...data,
+                        preparedBy: "",
+                        preparedSignatureUrl: "",
+                      });
+                      return;
+                    }
+                    const sel = signatories.find((u) => u._id === selId);
+                    if (sel) {
+                      const sigUrl =
+                        sel.signature ||
+                        DEFAULT_SIGNATORIES.find(
+                          (d) => d.name.trim().toLowerCase() === sel.name.trim().toLowerCase()
+                        )?.signature ||
+                        "";
+                      onChange({
+                        ...data,
+                        preparedBy: sel.name,
+                        preparedSignatureUrl: sigUrl,
+                      });
+                    }
                   }}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 bg-white font-bold"
+                  className="w-full border border-slate-300 rounded-xl px-2.5 py-1.5 bg-white outline-none focus:ring-1 focus:ring-[#FF2D01] text-slate-900 cursor-pointer font-medium"
                 >
-                  <option value="">-- Select or type manually --</option>
-                  {signatories.map((s) => (
-                    <option key={s._id} value={s.name}>
-                      {s.name} ({s.roleName || "User"})
+                  <option value="">-- Select Signatory --</option>
+                  {signatories.map((u) => (
+                    <option key={u._id} value={u._id}>
+                      {u.name} {u.roleName ? `(${u.roleName})` : ""}
                     </option>
                   ))}
-                  <option value="SIVAGANESHAN.V.A">SIVAGANESHAN.V.A</option>
-                  <option value="Quality Engineer">Quality Engineer</option>
                 </select>
                 <input
                   type="text"
                   value={data.preparedBy || ""}
                   onChange={(e) => handleFieldChange("preparedBy", e.target.value)}
-                  placeholder="Or enter custom name"
-                  className="w-full px-3 py-1.5 text-xs rounded-xl border border-slate-200 bg-white"
+                  placeholder="Or type custom name"
+                  className="w-full border border-slate-300 rounded-xl px-2.5 py-1.5 bg-white outline-none focus:ring-1 focus:ring-[#FF2D01] text-slate-900"
                 />
+                {data.preparedSignatureUrl && (
+                  <div className="p-2 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-2">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={data.preparedSignatureUrl}
+                      alt="Prepared Sign"
+                      className="h-7 w-auto object-contain mix-blend-multiply"
+                    />
+                    <span className="text-[10px] font-bold text-emerald-800">Sign Linked</span>
+                  </div>
+                )}
               </div>
 
-              {/* Witnessed By */}
-              <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-                <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wide block">
-                  Witnessed By
-                </span>
+              {/* 2. REVIEWED BY */}
+              <div className="space-y-2 border border-slate-200 p-3.5 rounded-2xl bg-slate-50/50">
+                <label className="block font-bold text-slate-800 flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4 text-blue-600" />
+                  <span>2. REVIEWED BY</span>
+                </label>
                 <select
-                  value={data.witnessedBy || ""}
+                  value={
+                    signatories.find(
+                      (u) =>
+                        u.name.trim().toLowerCase() ===
+                        (data.reviewedBy || data.witnessedBy || "").trim().toLowerCase()
+                    )?._id || ""
+                  }
                   onChange={(e) => {
-                    const selected = signatories.find((s) => s.name === e.target.value);
-                    onChange({
-                      ...data,
-                      witnessedBy: e.target.value,
-                      witnessSignatureUrl: selected?.signature || data.witnessSignatureUrl,
-                    });
+                    const selId = e.target.value;
+                    if (!selId) {
+                      onChange({
+                        ...data,
+                        reviewedBy: "",
+                        reviewedSignatureUrl: "",
+                        witnessedBy: "",
+                        witnessSignatureUrl: "",
+                      });
+                      return;
+                    }
+                    const sel = signatories.find((u) => u._id === selId);
+                    if (sel) {
+                      const sigUrl =
+                        sel.signature ||
+                        DEFAULT_SIGNATORIES.find(
+                          (d) => d.name.trim().toLowerCase() === sel.name.trim().toLowerCase()
+                        )?.signature ||
+                        "";
+                      onChange({
+                        ...data,
+                        reviewedBy: sel.name,
+                        reviewedSignatureUrl: sigUrl,
+                        witnessedBy: sel.name,
+                        witnessSignatureUrl: sigUrl,
+                      });
+                    }
                   }}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 bg-white font-bold"
+                  className="w-full border border-slate-300 rounded-xl px-2.5 py-1.5 bg-white outline-none focus:ring-1 focus:ring-[#FF2D01] text-slate-900 cursor-pointer font-medium"
                 >
-                  <option value="">-- Select or type manually --</option>
-                  {signatories.map((s) => (
-                    <option key={s._id} value={s.name}>
-                      {s.name} ({s.roleName || "User"})
+                  <option value="">-- Select Signatory --</option>
+                  {signatories.map((u) => (
+                    <option key={u._id} value={u._id}>
+                      {u.name} {u.roleName ? `(${u.roleName})` : ""}
                     </option>
                   ))}
-                  <option value="KARTHIKEYAN.A">KARTHIKEYAN.A</option>
-                  <option value="SIVAGANESHAN.V.A">SIVAGANESHAN.V.A</option>
                 </select>
                 <input
                   type="text"
-                  value={data.witnessedBy || ""}
-                  onChange={(e) => handleFieldChange("witnessedBy", e.target.value)}
-                  placeholder="Or enter custom name"
-                  className="w-full px-3 py-1.5 text-xs rounded-xl border border-slate-200 bg-white"
-                />
-              </div>
-
-              {/* Approved by */}
-              <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-                <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wide block">
-                  Approved by
-                </span>
-                <select
-                  value={data.approvedBy || ""}
+                  value={data.reviewedBy || data.witnessedBy || ""}
                   onChange={(e) => {
-                    const selected = signatories.find((s) => s.name === e.target.value);
                     onChange({
                       ...data,
-                      approvedBy: e.target.value,
-                      approvedSignatureUrl: selected?.signature || data.approvedSignatureUrl,
+                      reviewedBy: e.target.value,
+                      witnessedBy: e.target.value,
                     });
                   }}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 bg-white font-bold"
+                  placeholder="Or type custom name"
+                  className="w-full border border-slate-300 rounded-xl px-2.5 py-1.5 bg-white outline-none focus:ring-1 focus:ring-[#FF2D01] text-slate-900"
+                />
+                {(data.reviewedSignatureUrl || data.witnessSignatureUrl) && (
+                  <div className="p-2 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-2">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={data.reviewedSignatureUrl || data.witnessSignatureUrl}
+                      alt="Reviewed Sign"
+                      className="h-7 w-auto object-contain mix-blend-multiply"
+                    />
+                    <span className="text-[10px] font-bold text-emerald-800">Sign Linked</span>
+                  </div>
+                )}
+              </div>
+
+              {/* 3. APPROVED BY */}
+              <div className="space-y-2 border border-slate-200 p-3.5 rounded-2xl bg-slate-50/50">
+                <label className="block font-bold text-slate-800 flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                  <span>3. APPROVED BY</span>
+                </label>
+                <select
+                  value={
+                    signatories.find(
+                      (u) => u.name.trim().toLowerCase() === (data.approvedBy || "").trim().toLowerCase()
+                    )?._id || ""
+                  }
+                  onChange={(e) => {
+                    const selId = e.target.value;
+                    if (!selId) {
+                      onChange({
+                        ...data,
+                        approvedBy: "",
+                        approvedSignatureUrl: "",
+                      });
+                      return;
+                    }
+                    const sel = signatories.find((u) => u._id === selId);
+                    if (sel) {
+                      const sigUrl =
+                        sel.signature ||
+                        DEFAULT_SIGNATORIES.find(
+                          (d) => d.name.trim().toLowerCase() === sel.name.trim().toLowerCase()
+                        )?.signature ||
+                        "";
+                      onChange({
+                        ...data,
+                        approvedBy: sel.name,
+                        approvedSignatureUrl: sigUrl,
+                      });
+                    }
+                  }}
+                  className="w-full border border-slate-300 rounded-xl px-2.5 py-1.5 bg-white outline-none focus:ring-1 focus:ring-[#FF2D01] text-slate-900 cursor-pointer font-medium"
                 >
-                  <option value="">-- Select or type manually --</option>
-                  {signatories.map((s) => (
-                    <option key={s._id} value={s.name}>
-                      {s.name} ({s.roleName || "User"})
+                  <option value="">-- Select Signatory --</option>
+                  {signatories.map((u) => (
+                    <option key={u._id} value={u._id}>
+                      {u.name} {u.roleName ? `(${u.roleName})` : ""}
                     </option>
                   ))}
-                  <option value="System Administrator">System Administrator</option>
-                  <option value="KARTHIKEYAN.A">KARTHIKEYAN.A</option>
                 </select>
                 <input
                   type="text"
                   value={data.approvedBy || ""}
                   onChange={(e) => handleFieldChange("approvedBy", e.target.value)}
-                  placeholder="Or enter custom name"
-                  className="w-full px-3 py-1.5 text-xs rounded-xl border border-slate-200 bg-white"
+                  placeholder="Or type custom name"
+                  className="w-full border border-slate-300 rounded-xl px-2.5 py-1.5 bg-white outline-none focus:ring-1 focus:ring-[#FF2D01] text-slate-900"
                 />
+                {data.approvedSignatureUrl && (
+                  <div className="p-2 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-2">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={data.approvedSignatureUrl}
+                      alt="Approved Sign"
+                      className="h-7 w-auto object-contain mix-blend-multiply"
+                    />
+                    <span className="text-[10px] font-bold text-emerald-800">Sign Linked</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>

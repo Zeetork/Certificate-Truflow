@@ -23,13 +23,23 @@ export const MaterialTestTemplate: React.FC<MaterialTestTemplateProps> = ({
   const currentStatus = (status || data.status || "DRAFT").toUpperCase();
   const isDraft = currentStatus === "DRAFT" || !currentStatus;
   const isApproved = currentStatus === "APPROVED";
+  const isPendingApproval = currentStatus === "PENDING_APPROVAL";
+  const forceShow = Boolean(data.showSignatures);
 
-  // Truflow Signatures workflow
-  const showPreparedSignature = !isDraft && Boolean(data.preparedSignatureUrl);
-  const showWitnessSignature =
-    (isApproved || currentStatus === "PENDING_APPROVAL") &&
-    Boolean(data.witnessSignatureUrl);
-  const showApprovedSignature = isApproved && Boolean(data.approvedSignatureUrl);
+  const reviewedByName = data.reviewedBy || data.witnessedBy;
+  const reviewedSignUrl = data.reviewedSignatureUrl || data.witnessSignatureUrl;
+
+  // Truflow Signatures workflow (matching Paint Report style)
+  const showPreparedSignature =
+    (isPendingApproval || isApproved || forceShow) &&
+    Boolean(data.preparedSignatureUrl);
+  const showReviewedSignature =
+    (isApproved || forceShow) &&
+    Boolean(reviewedSignUrl);
+  const showApprovedSignature =
+    (isApproved || forceShow) &&
+    Boolean(data.approvedSignatureUrl);
+  const showStamp = (isApproved || forceShow) && data.showStamp !== false;
 
   const certNo = certificateNumber || data.certificateNumber || "DRAFT";
 
@@ -489,90 +499,82 @@ export const MaterialTestTemplate: React.FC<MaterialTestTemplateProps> = ({
         </div>
 
         {/* ========================================================================= */}
-        {/* 5. SIGNATORIES FOOTER (PREPARED BY | WITNESSED BY | APPROVED BY)          */}
+        {/* 5. FOOTER SIGNATORIES (PREPARED | REVIEWED | APPROVED)                    */}
         {/* ========================================================================= */}
-        <table className="w-full table-fixed border-collapse border-t-[1.5px] border-black text-center text-[10px]">
-          <colgroup>
-            <col style={{ width: "33.33%" }} />
-            <col style={{ width: "33.34%" }} />
-            <col style={{ width: "33.33%" }} />
-          </colgroup>
-          <tbody>
-            <tr className="h-24">
-              {/* Prepared By */}
-              <td className="p-1.5 px-3 border-r border-black align-bottom pb-2">
-                <div className="flex flex-col items-center justify-end h-full">
-                  {showPreparedSignature && data.preparedSignatureUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={data.preparedSignatureUrl}
-                      alt="Prepared Signature"
-                      className="h-10 w-auto object-contain mb-1"
-                    />
-                  ) : (
-                    <div className="h-8" />
-                  )}
-                  {data.preparedBy && (
-                    <span className="text-[10px] font-bold uppercase text-neutral-900 leading-tight mb-1">
-                      {data.preparedBy}
-                    </span>
-                  )}
-                  <span className="text-[10.5px] font-bold text-black tracking-tight">
-                    Prepared By
-                  </span>
-                </div>
-              </td>
+        <div className="w-full grid grid-cols-3 border-t-[1.5px] border-black text-center min-h-[96px] flex-shrink-0">
+          <div className="p-2 border-r border-black flex flex-col justify-between items-center">
+            <span className="font-bold text-[9px] uppercase tracking-wider text-black">
+              PREPARED
+            </span>
+            <div className="h-[50px] w-full flex items-center justify-center my-0.5">
+              {showPreparedSignature ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={data.preparedSignatureUrl}
+                  alt="Prepared Signature"
+                  className="h-full w-auto object-contain mix-blend-multiply"
+                />
+              ) : (
+                <div className="w-24 border-b border-dashed border-slate-300 my-2" />
+              )}
+            </div>
+            <span className="font-semibold text-[9.5px] text-slate-900 uppercase">
+              {data.preparedBy || "SIVAGANESHAN.V.A"}
+            </span>
+          </div>
 
-              {/* Witnessed By */}
-              <td className="p-1.5 px-3 border-r border-black align-bottom pb-2">
-                <div className="flex flex-col items-center justify-end h-full">
-                  {showWitnessSignature && data.witnessSignatureUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={data.witnessSignatureUrl}
-                      alt="Witness Signature"
-                      className="h-10 w-auto object-contain mb-1"
-                    />
-                  ) : (
-                    <div className="h-8" />
-                  )}
-                  {data.witnessedBy && (
-                    <span className="text-[10px] font-bold uppercase text-neutral-900 leading-tight mb-1">
-                      {data.witnessedBy}
-                    </span>
-                  )}
-                  <span className="text-[10.5px] font-bold text-black tracking-tight">
-                    Witnessed By
-                  </span>
-                </div>
-              </td>
+          <div className="p-2 border-r border-black flex flex-col justify-between items-center">
+            <span className="font-bold text-[9px] uppercase tracking-wider text-black">
+              REVIEWED
+            </span>
+            <div className="h-[50px] w-full flex items-center justify-center my-0.5">
+              {showReviewedSignature ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={reviewedSignUrl}
+                  alt="Reviewed Signature"
+                  className="h-full w-auto object-contain mix-blend-multiply"
+                />
+              ) : (
+                <div className="w-24 border-b border-dashed border-slate-300 my-2" />
+              )}
+            </div>
+            <span className="font-semibold text-[9.5px] text-slate-900 uppercase">
+              {reviewedByName || "KARTHIKEYAN.A"}
+            </span>
+          </div>
 
-              {/* Approved by */}
-              <td className="p-1.5 px-3 align-bottom pb-2">
-                <div className="flex flex-col items-center justify-end h-full">
-                  {showApprovedSignature && data.approvedSignatureUrl ? (
+          <div className="p-2 flex flex-col justify-between items-center relative">
+            <span className="font-bold text-[9px] uppercase tracking-wider text-black">
+              APPROVED
+            </span>
+            <div className="h-[50px] w-full flex items-center justify-center my-0.5 relative">
+              {showApprovedSignature ? (
+                <div className="relative flex items-center justify-center h-full">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={data.approvedSignatureUrl}
+                    alt="Approved Signature"
+                    className="h-full w-auto object-contain mix-blend-multiply"
+                  />
+                  {showStamp && (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      src={data.approvedSignatureUrl}
-                      alt="Approved Signature"
-                      className="h-10 w-auto object-contain mb-1"
+                      src={data.sealStampUrl || "/signature/truflow-seal-stamp.png"}
+                      alt="Truflow Stamp"
+                      className="absolute -right-6 -top-2 h-12 w-auto mix-blend-multiply opacity-85 pointer-events-none"
                     />
-                  ) : (
-                    <div className="h-8" />
                   )}
-                  {data.approvedBy && (
-                    <span className="text-[10px] font-bold uppercase text-neutral-900 leading-tight mb-1">
-                      {data.approvedBy}
-                    </span>
-                  )}
-                  <span className="text-[10.5px] font-bold text-black tracking-tight">
-                    Approved by
-                  </span>
                 </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+              ) : (
+                <div className="w-24 border-b border-dashed border-slate-300 my-2" />
+              )}
+            </div>
+            <span className="font-semibold text-[9.5px] text-slate-900 uppercase">
+              {data.approvedBy || "KANNATHASAN"}
+            </span>
+          </div>
+        </div>
       </div>
     </div>
   );

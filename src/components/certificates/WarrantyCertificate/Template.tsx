@@ -12,98 +12,63 @@ interface WarrantyCertificateTemplateProps {
   certificateNumber?: string;
   revision?: number;
   status?: string;
+  onChange?: (newData: WarrantyCertificateData) => void;
 }
+
+export const DEFAULT_TERMS_OF_WARRANTY = [
+  "This warranty excludes normal wear and tear, improper installation, storage, operation or maintenance, misuse, unauthorized modifications and external causes.",
+  "For verified claims notified within the warranty period, our obligation is limited, at our option, to repair, replacement or refund of the price paid for the defective product.",
+  "To the maximum extent permitted by law, we exclude liability for indirect or consequential losses, including production downtime and loss of profit. Our aggregate liability shall not exceed the price paid for the affected product, except where prohibited by applicable law.",
+];
 
 export const WarrantyCertificateTemplate: React.FC<WarrantyCertificateTemplateProps> = ({
   data,
   status,
+  onChange,
 }) => {
   const generalCustom: CustomField[] = data.customFields?.general || [];
   const productCustom: CustomField[] = data.customFields?.product || [];
 
-  // Helper to format date with dots: DD.MM.YYYY (e.g. 10.09.2026)
-  const formatDotDate = (d?: string): string => {
-    if (!d) return "";
-    const trimmed = d.trim();
-    if (trimmed.includes("T")) {
-      const datePart = trimmed.split("T")[0];
-      const parts = datePart.split("-");
-      if (parts.length === 3) return `${parts[2]}.${parts[1]}.${parts[0]}`;
-    }
-    if (trimmed.includes("-")) {
-      const parts = trimmed.split("-");
-      if (parts.length === 3 && parts[0].length === 4) {
-        return `${parts[2]}.${parts[1]}.${parts[0]}`;
-      }
-      if (parts.length === 3) {
-        return `${parts[0]}.${parts[1]}.${parts[2]}`;
-      }
-    }
-    if (trimmed.includes("/")) {
-      const parts = trimmed.split("/");
-      if (parts.length === 3 && parts[2].length === 4) {
-        return `${parts[0]}.${parts[1]}.${parts[2]}`;
-      }
-    }
-    return trimmed;
-  };
-
-  // Helper to format certificate date with hyphens: DD-MM-YYYY (e.g. 14-09-2026)
-  const formatHyphenDate = (d?: string): string => {
-    if (!d) return "14-09-2026";
-    const trimmed = d.trim();
-    if (trimmed.includes("T")) {
-      const datePart = trimmed.split("T")[0];
-      const parts = datePart.split("-");
-      if (parts.length === 3) return `${parts[2]}-${parts[1]}-${parts[0]}`;
-    }
-    if (trimmed.includes("-")) {
-      const parts = trimmed.split("-");
-      if (parts.length === 3 && parts[0].length === 4) {
-        return `${parts[2]}-${parts[1]}-${parts[0]}`;
-      }
-      if (parts.length === 3) {
-        return `${parts[0]}-${parts[1]}-${parts[2]}`;
-      }
-    }
-    if (trimmed.includes(".")) {
-      const parts = trimmed.split(".");
-      if (parts.length === 3) {
-        return `${parts[0]}-${parts[1]}-${parts[2]}`;
-      }
-    }
-    return trimmed;
-  };
-
-  const poNumber = data.customerPO || "PO00900";
-  const poDateFormatted = formatDotDate(data.poDate || data.customerPODate || "2026-09-10");
-  const certDateFormatted = formatHyphenDate(data.date || data.certificateDate || "2026-09-14");
-  const jobRefNo = data.salesOrderNo || "INS220331";
-
-  const salutation = data.salutation || "To whom so here it my concern,";
-
-  const warrantyPeriod =
-    (data.warrantyPeriodSupply && data.warrantyPeriodInstallation
-      ? `${data.warrantyPeriodSupply} or ${data.warrantyPeriodInstallation}, whichever is earlier.`
-      : null) ||
-    "18 months from the date of supply or 12 months from the date of installation, whichever is earlier.";
-
-  const warrantyNote =
-    data.warrantyNoteText
-      ? data.warrantyNoteText.replace(/^Note:\s*/i, "")
-      : "The warranty is applicable only to manufacturing defects and does not cover normal wear and tear, improper usage, mishandling, or damage caused by improper installation or maintenance.";
+  const customerName = data.customerName ?? "ABC Private Limited";
+  const salesOrderNo = data.salesOrderNo ?? "510";
+  const poNumber = data.customerPO ?? "P000900";
 
   const lineItems: WarrantyCertificateItem[] = data.lineItems || [];
-  const hasMultipleLineItems = lineItems.length > 1;
-
-  let productDescriptionText = data.productDescription;
-  if (!productDescriptionText && lineItems.length > 0) {
-    const item = lineItems[0];
-    productDescriptionText = `${item.sNo || 1}. ${item.description || ""}${item.quantity ? ` ${item.quantity}` : ""}`;
+  let productDescription =
+    data.productDescription ?? "Please refer above Sales Order";
+  if (
+    !data.productDescription &&
+    lineItems.length > 0 &&
+    lineItems[0].description
+  ) {
+    productDescription = lineItems[0].description;
   }
 
-  const signatoryName = data.signatoryName || data.witnessedBy || "Elavarasan.K";
-  const signatoryCompany = data.signatoryCompany || "Truflow Solutions Pvt Ltd";
+  const companyName =
+    data.companyName || "TruFlow Solutions Private Limited";
+  const companyAddress =
+    data.companyAddress ||
+    "S.F. No-617/2H2, Vadakku Thottam, L&T Road, Malumichampatti, Coimbatore-641 021, Tamil Nadu, India.";
+  const companyWebsite = data.companyWebsite || "www.truflow.com";
+  const companyEmail = data.companyEmail || "sales@truflow.com";
+  const gstNo = data.gstNo || "33AAJCR6720N1Z1";
+
+  const declarationText =
+    data.declarationText ??
+    data.poConfirmationText ??
+    "We warrant that the products supplied under our above referred Sales Order conform to the agreed specifications and are free from manufacturing defects in materials and workmanship.";
+
+  const warrantyPeriod =
+    data.warrantyTermsText ??
+    data.warrantyPeriodSupply ??
+    data.warrantyPeriodInstallation ??
+    "18 months from the date of supply or 12 months from the date of installation, whichever occurs earlier. The installation date shall be substantiated by documentary evidence.";
+
+  const termsOfWarranty =
+    data.termsOfWarranty && data.termsOfWarranty.length > 0
+      ? data.termsOfWarranty
+      : DEFAULT_TERMS_OF_WARRANTY;
+
   const signatureUrl =
     data.witnessSignatureUrl || "/signature/truflow-signature.png";
   const stampUrl = data.sealStampUrl || "/signature/truflow-seal-stamp.png";
@@ -111,7 +76,8 @@ export const WarrantyCertificateTemplate: React.FC<WarrantyCertificateTemplatePr
   const currentStatus = (status || data.status || "").toUpperCase();
   const isDraft = currentStatus === "DRAFT" || !currentStatus;
   const isApproved = currentStatus === "APPROVED";
-  const showSignatures = data.showSignatures !== false && (!isDraft || isApproved);
+  const showSignatures =
+    data.showSignatures !== false && (!isDraft || isApproved);
   const showStamp = data.showStamp !== false;
 
   return (
@@ -119,147 +85,99 @@ export const WarrantyCertificateTemplate: React.FC<WarrantyCertificateTemplatePr
       id="certificate-a4-document"
       data-certificate-page="1"
       data-orientation="portrait"
-      className="certificate-a4-page bg-white mx-auto text-black select-text shadow-lg print:shadow-none print:m-0 box-border flex flex-col justify-between print:!p-[14mm]"
+      className="certificate-a4-page relative bg-white mx-auto text-black select-text shadow-lg print:shadow-none print:m-0 box-border flex flex-col justify-between print:!p-[12mm]"
       style={{
         width: "794px",
         minHeight: "1123px",
-        padding: "48px 56px 40px 56px",
+        padding: "44px 54px 34px 54px",
         fontFamily: "Arial, 'Helvetica Neue', Helvetica, sans-serif",
         backgroundColor: "#ffffff",
       }}
     >
-      {/* Top and Body Content Container */}
+      {/* Corner Crop / Registration Marks matching the reference image */}
+      {/* <div className="absolute top-5 left-5 w-3.5 h-3.5 border-t border-l border-gray-300 pointer-events-none" />
+      <div className="absolute top-5 right-5 w-3.5 h-3.5 border-t border-r border-gray-300 pointer-events-none" />
+      <div className="absolute bottom-5 left-5 w-3.5 h-3.5 border-b border-l border-gray-300 pointer-events-none" />
+      <div className="absolute bottom-5 right-5 w-3.5 h-3.5 border-b border-r border-gray-300 pointer-events-none" /> */}
+
+      {/* Main Content Area */}
       <div className="w-full flex flex-col">
-        {/* Top Right Logo */}
-        <div className="flex justify-end mb-4">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/truflow-logo.png"
-            alt="TRUFLOW"
-            className="h-[46px] w-auto object-contain"
-          />
+        {/* Top Right Logo in thin border box */}
+        <div className="flex justify-end mb-6">
+          <div className="bg-white inline-flex items-center justify-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/truflow-logo.png"
+              alt="TRUFLOW"
+              className="h-9 w-auto object-contain"
+            />
+          </div>
         </div>
 
-        {/* Centered Underlined Document Title */}
-        <div className="text-center my-4">
-          <h1 className="text-[20px] font-bold text-black tracking-wider uppercase inline-block border-b-2 border-black pb-0.5">
+        {/* Left-Aligned Document Title */}
+        <div className="mb-10 m-auto">
+          <h1 className="text-[20px] sm:text-[20px] font-bold text-black uppercase tracking-wide">
             WARRANTY CERTIFICATE
           </h1>
+        </div> 
+
+        {/* Customer & Order Reference Metadata */}
+        <div className="text-[15px] text-black mb-10 leading-relaxed">
+          <table className="border-collapse">
+            <tbody>
+              <tr>
+                <td className="font-bold whitespace-nowrap pr-2 py-0.5 align-top">Customer Name</td>
+                <td className="font-bold px-2 py-0.5 align-top text-center">:</td>
+                <td className="text-black py-0.5 align-top">{customerName}</td>
+              </tr>
+              <tr>
+                <td className="font-bold whitespace-nowrap pr-2 py-0.5 align-top">Sales Order No.</td>
+                <td className="font-bold px-2 py-0.5 align-top text-center">:</td>
+                <td className="text-black py-0.5 align-top">{salesOrderNo}</td>
+              </tr>
+              <tr>
+                <td className="font-bold whitespace-nowrap pr-2 py-0.5 align-top">Customer PO No.</td>
+                <td className="font-bold px-2 py-0.5 align-top text-center">:</td>
+                <td className="text-black py-0.5 align-top">{poNumber}</td>
+              </tr>
+              <tr>
+                <td className="font-bold whitespace-nowrap pr-2 py-0.5 align-top">Product Description</td>
+                <td className="font-bold px-2 py-0.5 align-top text-center">:</td>
+                <td className="text-black py-0.5 align-top">{productDescription}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
-        {/* Right-aligned Date */}
-        <div className="flex justify-end mb-6">
-          <div className="text-[13.5px] text-black">
-            <span className="font-bold">Date: </span>
-            <span className="font-semibold">{certDateFormatted}</span>
-          </div>
-        </div>
-
-        {/* Letter Recipient / Order Reference Metadata */}
-        <div className="space-y-1.5 text-[13.5px] text-black mb-8 leading-relaxed font-sans">
-          <div className="flex items-baseline">
-            <span className="font-bold min-w-[130px]">Customer</span>
-            <span className="font-bold mr-2">:</span>
-            <span className="font-bold text-black">
-              {data.customerName || "Armatury Bauen Olomouc Controls Private Limited"}
-            </span>
-          </div>
-          <div className="flex items-baseline">
-            <span className="font-bold mr-1">Cus Po No:</span>
-            <span>
-              {poNumber}
-              {poDateFormatted ? ` Dt:${poDateFormatted}` : ""}
-            </span>
-          </div>
-          <div className="flex items-baseline">
-            <span className="font-bold mr-1">SO No :</span>
-            <span>{jobRefNo}</span>
-          </div>
-          <div className="flex items-baseline">
-            <span className="font-bold mr-1">Product Description:</span>
-            {productDescriptionText ? (
-              <span className="font-medium text-black ml-1">
-                {productDescriptionText}
-              </span>
-            ) : null}
-          </div>
-
-          {/* Multiple items listed cleanly if present */}
-          {hasMultipleLineItems && (
-            <div className="mt-1 pl-4 text-[12px] space-y-0.5 text-slate-800">
-              {lineItems.map((item, idx) => (
-                <div key={item.id || idx}>
-                  {item.sNo || idx + 1}. {item.description}{" "}
-                  {item.size ? `- ${item.size} ` : ""}
-                  {item.quantity ? `(${item.quantity})` : ""}
-                  {item.remarks ? ` - ${item.remarks}` : ""}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Salutation */}
-        <div className="font-bold text-[13.5px] text-black mb-4">
-          {salutation}
-        </div>
-
-        {/* Paragraph 1 - Confirmation of PO */}
-        <p
-          className="text-[13px] text-black leading-relaxed text-justify mb-5"
-          style={{ textIndent: "2.5rem", textAlign: "justify" }}
-        >
-          {data.poConfirmationText ? (
-            data.poConfirmationText
-          ) : (
-            <>
-              We hereby confirm that the supplied items are in accordance with Purchase Order No.{" "}
-              <span className="text-black">{poNumber}</span>
-              {poDateFormatted ? (
-                <>, dated <span className="text-black">{poDateFormatted}</span></>
-              ) : null}
-              .
-            </>
-          )}
+        {/* Introductory Body Paragraph */}
+        <p className="text-[15px] text-black leading-relaxed text-justify mb-8">
+          {declarationText}
         </p>
 
-        {/* Paragraph 2 - Manufacturing Standards & Warranty Period */}
-        <p
-          className="text-[13px] text-black leading-relaxed text-justify mb-5"
-          style={{ textIndent: "2.5rem", textAlign: "justify" }}
-        >
-          {data.warrantyTermsText ? (
-            data.warrantyTermsText
-          ) : (
-            <>
-              The products supplied under the above-mentioned Purchase Order are manufactured to the{" "}
-              highest standards and in accordance with the specified requirements. We confirm that the products{" "}
-              carry a standard warranty period of {warrantyPeriod}
-            </>
-          )}
+        {/* Warranty Period Section */}
+        <p className="text-[15px] text-black leading-relaxed text-justify mb-8">
+          <span className="font-bold">Warranty Period: </span>
+          {warrantyPeriod}
         </p>
 
-        {/* Paragraph 3 - Note & Exclusions */}
-        <p
-          className="text-[13px] text-black leading-relaxed text-justify mb-6"
-          style={{ textIndent: "2.5rem", textAlign: "justify" }}
-        >
-          <span className="font-bold text-black">Note:</span> {warrantyNote}
-        </p>
-
-        {/* Optional Closing Sentence */}
-        {data.closingText && (
-          <p
-            className="text-[12.5px] text-black leading-relaxed text-justify mb-4"
-            style={{ textIndent: "2.5rem", textAlign: "justify" }}
-          >
-            {data.closingText}
-          </p>
-        )}
+        {/* Terms of Warranty Section */}
+        <div className="space-y-2.5 mb-8">
+          <div className="font-bold text-[15px] text-black mb-6">
+            Terms of Warranty :
+          </div>
+          <ol className="space-y-5 text-[15px] text-black leading-relaxed">
+            {termsOfWarranty.map((term, idx) => (
+              <li key={idx} className="flex items-start text-justify">
+                <span className="mr-3 font-medium select-none">{idx + 1}.</span>
+                <span className="flex-1">{term}</span>
+              </li>
+            ))}
+          </ol>
+        </div>
 
         {/* Optional Custom Fields */}
         {(generalCustom.length > 0 || productCustom.length > 0) && (
-          <div className="my-3 space-y-1 text-[12px] text-black pl-10">
+          <div className="my-2 space-y-1 text-[15px] text-black">
             {[...generalCustom, ...productCustom].map((cf, idx) => (
               <div key={cf.id || idx}>
                 <span className="font-bold">{cf.name}: </span>
@@ -270,75 +188,74 @@ export const WarrantyCertificateTemplate: React.FC<WarrantyCertificateTemplatePr
         )}
 
         {/* Signatory Section */}
-        <div className="mt-6 mb-4">
-          <div className="font-bold text-[13px] text-black mb-2">
-            Yours sincerely,
+        <div className="mt-2 mb-4">
+          <div className="font-bold text-[15px] text-black mb-4">
+            For and on behalf of {companyName}
           </div>
 
-          <div className="my-2 h-[75px] flex items-center">
-            {showSignatures ? (
-              <div className="relative flex items-center h-[75px]">
-                {showStamp && stampUrl && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
+          <div className="flex items-end gap-2 text-[15px] text-black">
+              <div className="font-bold whitespace-nowrap">Authorized Signatory</div>
+            <div className="relative inline-flex items-center min-w-[200px]">
+              {showSignatures ? (
+                <div className="relative flex items-center h-[52px]">
+                  {showStamp && stampUrl && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
                     src={stampUrl}
                     alt="Truflow Seal Stamp"
-                    className="h-[75px] w-[75px] object-contain opacity-95"
-                  />
-                )}
-                {signatureUrl && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={signatureUrl}
-                    alt="Authorized Signature"
-                    className={`h-[55px] w-auto object-contain mix-blend-multiply ${
-                      showStamp && stampUrl ? "-ml-6" : ""
-                    }`}
-                  />
-                )}
-              </div>
-            ) : (
-              <div className="w-48 border-b border-dashed border-gray-400 h-10" />
-            )}
-          </div>
-
-          <div className="font-bold text-[13px] uppercase tracking-wide text-black mt-2">
-            {signatoryName}
-          </div>
-          {signatoryCompany && (
-            <div className="text-[11.5px] text-black mt-0.5">
-              {signatoryCompany}
+                    className="h-[52px] w-[52px] object-contain opacity-95"
+                    />
+                  )}
+                  {signatureUrl && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={signatureUrl}
+                      alt="Authorized Signature"
+                      className={`h-[42px] w-auto object-contain mix-blend-multiply ${
+                        showStamp && stampUrl ? "-ml-4" : ""
+                      }`}
+                    />
+                  )}
+                </div>
+              ) : (
+                <div className="w-56 border-b border-black h-4 inline-block relative">
+                  <span className="absolute right-0 bottom-0 h-3 border-r border-black" />
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
       </div>
 
-      {/* Centered Clean Footer (No Box/Table Borders) */}
-      <div className="w-full text-center mt-auto pt-8">
-        <div className="font-bold text-[12.5px] text-black tracking-wide">
-          {data.companyName || "TruFlow Solutions Private Limited,"}
+      {/* Centered Clean Footer */}
+      <div className="w-full text-center mt-auto pt-6 text-black">
+        <div className="font-bold text-[11.5px] text-black tracking-wide">
+          {companyName},
         </div>
-        <div className="text-[11px] text-black mt-1 leading-snug">
-          {data.companyAddress ||
-            "S.F. No-617/2H2, Vadakku Thottam, L&T Road, Malumichampatti, Coimbatore-641 021, Tamil Nadu, India."}
+        <div className="text-[10px] text-black mt-0.5 leading-snug">
+          {companyAddress}
         </div>
-        <div className="text-[11px] text-black mt-1 leading-snug">
+        <div className="text-[10px] text-black mt-0.5 leading-snug">
           <a
-            href={`https://${data.companyWebsite || "www.truflow.com"}`}
+            href={
+              companyWebsite.startsWith("http")
+                ? companyWebsite
+                : `https://${companyWebsite}`
+            }
             target="_blank"
             rel="noopener noreferrer"
             className="text-blue-600 underline"
           >
-            {data.companyWebsite || "www.truflow.com"}
+            {companyWebsite}
           </a>
           {" "}| Email:{" "}
           <a
-            href={`mailto:${data.companyEmail || "sales@truflow.com"}`}
+            href={`mailto:${companyEmail}`}
             className="text-blue-600 underline"
           >
-            {data.companyEmail || "sales@truflow.com"}
+            {companyEmail}
           </a>
-          {" "}| GST No: {data.gstNo || "33AAJCR6720N1Z1"}
+          {" "}| GST No: {gstNo}
         </div>
       </div>
     </div>

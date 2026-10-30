@@ -4,6 +4,7 @@ import { CertificateSequence } from "@/models/CertificateSequence";
 import {
   generateCertificateNumber,
   getPageCertificateNumber,
+  calculateValveFunctionalTestPages,
 } from "@/services/certificateNumberService";
 import { submitCertificateForApproval } from "@/services/approvalService";
 import { CertificateType, CertificateStatus } from "@/types/certificate";
@@ -36,9 +37,11 @@ export async function createCertificate(
 
   const lineItems = (input.certificateData as { lineItems?: unknown[] })?.lineItems;
   const pageCountInput =
-    input.certificateType === "valve-functional-test" && Array.isArray(lineItems) && lineItems.length > 0
-      ? lineItems.length
-      : 1;
+    input.certificateType === "valve-functional-test"
+      ? calculateValveFunctionalTestPages(input.certificateData)
+      : Array.isArray(lineItems) && lineItems.length > 0
+        ? lineItems.length
+        : 1;
 
   // Atomically generate the official certificate number range reserving required page slots
   const certNumberResult = await generateCertificateNumber(input.certificateType, pageCountInput);
@@ -126,9 +129,11 @@ export async function updateCertificate(
   // Recalculate pageCount and lastCertificateNumber if multi-page
   const lineItems = (certificateData as { lineItems?: unknown[] })?.lineItems;
   const newPageCount =
-    certificate.certificateType === "valve-functional-test" && Array.isArray(lineItems) && lineItems.length > 0
-      ? lineItems.length
-      : 1;
+    certificate.certificateType === "valve-functional-test"
+      ? calculateValveFunctionalTestPages(certificateData)
+      : Array.isArray(lineItems) && lineItems.length > 0
+        ? lineItems.length
+        : 1;
 
   certificate.pageCount = newPageCount;
   certificate.lastCertificateNumber = getPageCertificateNumber(certificate.certificateNumber, newPageCount - 1);
@@ -136,7 +141,7 @@ export async function updateCertificate(
   // If the new end certificate number extends the sequence, bump CertificateSequence so future certs won't collide
   const currentYear = new Date().getFullYear();
   const yyStr = String(currentYear).slice(-2);
-  const match = certificate.lastCertificateNumber?.match(new RegExp(`^ZIN${yyStr}(\\d{5})$`));
+  const match = certificate.lastCertificateNumber?.match(new RegExp(`^(?:TFC|ZIN|VFR|MHT|MTC|HTC|FDR|WC)${yyStr}(\\d{5})$`));
   if (match) {
     const endSeq = parseInt(match[1], 10);
     if (!isNaN(endSeq)) {
@@ -204,9 +209,11 @@ export async function cloneCertificate(
 
   const lineItems = (source.certificateData as { lineItems?: unknown[] })?.lineItems;
   const pageCountInput =
-    source.certificateType === "valve-functional-test" && Array.isArray(lineItems) && lineItems.length > 0
-      ? lineItems.length
-      : 1;
+    source.certificateType === "valve-functional-test"
+      ? calculateValveFunctionalTestPages(source.certificateData)
+      : Array.isArray(lineItems) && lineItems.length > 0
+        ? lineItems.length
+        : 1;
 
   const certNumberResult = await generateCertificateNumber(
     source.certificateType as CertificateType,
@@ -380,6 +387,7 @@ export async function getDashboardStats() {
     "hydro-test": 0,
     "final-dimensional-report": 0,
     "warranty-certificate": 0,
+    "painting-report": 0,
   };
 
   typeCounts.forEach((item) => {

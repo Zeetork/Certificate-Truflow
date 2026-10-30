@@ -14,7 +14,8 @@ export interface ICertificateDocument extends Document {
     | "material-hydro-test"
     | "material-test"
     | "hydro-test"
-    | "final-dimensional-report";
+    | "final-dimensional-report"
+    | "painting-report";
   revision: number;
   parentCertificateId?: mongoose.Types.ObjectId;
   status: "DRAFT" | "PENDING_APPROVAL" | "REJECTED" | "APPROVED";
@@ -72,6 +73,7 @@ const CertificateSchema = new Schema<ICertificateDocument>(
         "material-test",
         "hydro-test",
         "final-dimensional-report",
+        "painting-report",
       ],
       index: true,
     },

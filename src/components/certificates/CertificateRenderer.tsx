@@ -9,6 +9,7 @@ import {
   HydroTestCertificateData,
   FinalDimensionalReportCertificateData,
   WarrantyCertificateData,
+  PaintingReportCertificateData,
 } from "@/types/certificate";
 import { ValveFunctionalTestTemplate } from "./ValveFunctionalTest/Template";
 import { MaterialHydroTestTemplate } from "./MaterialHydroTest/Template";
@@ -16,6 +17,7 @@ import { MaterialTestTemplate } from "./MaterialTest/Template";
 import { HydroTestTemplate } from "./HydroTest/Template";
 import { FinalDimensionalReportTemplate } from "./FinalDimensionalReport/Template";
 import { WarrantyCertificateTemplate } from "./WarrantyCertificate/Template";
+import { PaintingReportTemplate } from "./PaintingReport/Template";
 
 interface CertificateRendererProps {
   certificateType?: CertificateType | string;
@@ -25,6 +27,7 @@ interface CertificateRendererProps {
   status?: string;
   activePageIndex?: number;
   showAllPages?: boolean;
+  onChange?: (newData: any) => void;
 }
 
 export const CertificateRenderer: React.FC<CertificateRendererProps> = ({
@@ -35,7 +38,19 @@ export const CertificateRenderer: React.FC<CertificateRendererProps> = ({
   status,
   activePageIndex,
   showAllPages = true,
+  onChange,
 }) => {
+  if (certificateType === "painting-report") {
+    return (
+      <PaintingReportTemplate
+        data={data as PaintingReportCertificateData}
+        certificateNumber={certificateNumber}
+        revision={revision}
+        status={status}
+      />
+    );
+  }
+
   if (certificateType === "final-dimensional-report") {
     return (
       <FinalDimensionalReportTemplate
@@ -87,6 +102,7 @@ export const CertificateRenderer: React.FC<CertificateRendererProps> = ({
         certificateNumber={certificateNumber}
         revision={revision}
         status={status}
+        onChange={onChange}
       />
     );
   }

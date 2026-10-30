@@ -135,7 +135,7 @@ export const FinalDimensionalReportTemplate: React.FC<
               </span>
             </div>
             <div className="col-span-4 px-3 py-1.5 flex items-center justify-end font-semibold text-slate-800 text-[9.5px]">
-              {data.dimensionUnitText || "All Dimensions are - mm"}
+              {data.dimensionUnitText || "All Dimensions are in mm unless otherwise stated"}
             </div>
           </div>
 

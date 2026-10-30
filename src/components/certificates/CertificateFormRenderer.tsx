@@ -9,6 +9,7 @@ import {
   HydroTestCertificateData,
   FinalDimensionalReportCertificateData,
   WarrantyCertificateData,
+  PaintingReportCertificateData,
 } from "@/types/certificate";
 import { ValveFunctionalTestForm } from "./ValveFunctionalTest/Form";
 import { MaterialHydroTestForm } from "./MaterialHydroTest/Form";
@@ -16,6 +17,7 @@ import { MaterialTestForm } from "./MaterialTest/Form";
 import { HydroTestForm } from "./HydroTest/Form";
 import { FinalDimensionalReportForm } from "./FinalDimensionalReport/Form";
 import { WarrantyCertificateForm } from "./WarrantyCertificate/Form";
+import { PaintingReportForm } from "./PaintingReport/Form";
 
 interface CertificateFormRendererProps {
   certificateType?: CertificateType | string;
@@ -42,6 +44,22 @@ export const CertificateFormRenderer: React.FC<CertificateFormRendererProps> = (
   submitLabel,
   onSwitchToPreview,
 }) => {
+  if (certificateType === "painting-report") {
+    return (
+      <PaintingReportForm
+        data={data as PaintingReportCertificateData}
+        onChange={(val) => onChange(val)}
+        errors={errors}
+        onSaveDraft={onSaveDraft}
+        onSubmitForApproval={onSubmitForApproval}
+        onCancel={onCancel}
+        isSaving={isSaving}
+        submitLabel={submitLabel}
+        onSwitchToPreview={onSwitchToPreview}
+      />
+    );
+  }
+
   if (certificateType === "final-dimensional-report") {
     return (
       <FinalDimensionalReportForm
